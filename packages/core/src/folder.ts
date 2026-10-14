@@ -44,6 +44,13 @@ export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS)
     .filter((f) => f.path && !JUNK.test(f.path));
   const root = findProjectRoot(files.map((f) => f.path));
   if (root === null) {
+    const tops = new Set(files.map((f) => f.path.split("/").slice(-2, -1)[0]?.toLowerCase()));
+    if ([...tops].every((t) => t === "assets" || t === "images" || t === "thumbnails")) {
+      throw new FramenoteError(
+        "This looks like the assets folder inside a project. Choose the folder one level up, the one that contains manifest.json.",
+        "not-a-framenote",
+      );
+    }
     throw new FramenoteError(
       "This folder has no manifest.json, so it is not an unzipped Frame Note project. Choose the folder that contains manifest.json and assets/.",
       "not-a-framenote",

@@ -61,6 +61,12 @@ describe("unpackFolder", () => {
     expect(findProjectRoot(["a/manifest.json", "a/old/manifest.json"])).toBe("a/");
   });
 
+  it("explains when the assets folder was picked instead of the project folder", async () => {
+    const { files } = await unzippedFolder("Trip/");
+    const inner = files.filter((f) => f.path.startsWith("Trip/assets/images/")).map((f) => ({ ...f, path: f.path.slice("Trip/assets/".length) }));
+    await expect(unpackFolder(inner)).rejects.toThrow(/assets folder inside a project/);
+  });
+
   it("rejects unsafe paths", async () => {
     const { files } = await unzippedFolder();
     files.push(toFile("assets/../../etc/passwd", strToU8("x")));
