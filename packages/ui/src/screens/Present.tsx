@@ -1,0 +1,283 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, SlidersHorizontal, Type, X } from "lucide-react";
+import { sortedImages, type Manifest } from "@framenote/core";
+import { usePlatform } from "../platform";
+import { useAutosave } from "../hooks/useAutosave";
+import { acquireAssetUrl, releaseAssetRef } from "../hooks/useAssetUrl";
+import { navigate } from "../lib/router";
+import { hasModifier, isTypingTarget } from "../lib/keys";
+import { PhotoStage } from "../components/PhotoStage";
+import { FieldPicker } from "../components/FieldPicker";
+import { Button, IconButton } from "../components/primitives";
+import { describeError } from "./Library";
+
+const HINT_KEY = "framenote.presentHintSeen";
+const IDLE_MS = 2500;
+
+export function Present({ id, index, mode }: { id: string; index: number; mode: "present" | "preview" }) {
+  const platform = usePlatform();
+  const [manifest, setManifest] = useState<Manifest | null>(null);
+  const [error, setError] = useState<string>();
+  useEffect(() => {
+    let alive = true;
+    platform
+      .loadAssignment(id)
+      .then((m) => alive && setManifest(m))
+      .catch((e) => alive && setError(describeError(e)));
+    return () => {
+      alive = false;
+    };
+  }, [platform, id]);
+  if (error)
+    return (
+      <div className="center-message">
+        <p>{error}</p>
+        <Button onClick={() => navigate({ name: "library" })}>Back to library</Button>
+      </div>
+    );
+  if (!manifest) return <div className="present present-loading" aria-busy="true" />;
+  return <PresentInner initial={manifest} index={index} mode={mode} />;
+}
+
+export function PresentInner({ initial, index, mode }: { initial: Manifest; index: number; mode: "present" | "preview" }) {
+  const platform = usePlatform();
+  const { manifest, update, flush } = useAutosave(initial, (m) => platform.saveAssignment(m));
+  const images = useMemo(() => sortedImages(manifest), [manifest]);
+  const count = images.length;
+  const [i, setI] = useState(() => Math.min(index, Math.max(0, count - 1)));
+  const [overlayOn, setOverlayOn] = useState(mode === "present" ? manifest.presentation.overlay.visible : false);
+  const [fit, setFit] = useState(manifest.presentation.fitMode);
+  const [picker, setPicker] = useState(false);
+  const [controls, setControls] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [hint, setHint] = useState(() => !localStorage.getItem(HINT_KEY));
+  const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const image = images[i];
+  const aid = manifest.assignmentId;
+
+  useEffect(() => setFit(manifest.presentation.fitMode), [manifest.presentation.fitMode]);
+
+  const go = useCallback(
+    (next: number) => {
+      const clamped = Math.max(0, Math.min(count - 1, next));
+      setI(clamped);
+      navigate({ name: "present", id: aid, index: clamped, mode }, true);
+    },
+    [aid, count, mode],
+  );
+
+  const poke = useCallback(() => {
+    setControls(true);
+    if (idle.current) clearTimeout(idle.current);
+    idle.current = setTimeout(() => setControls(false), IDLE_MS);
+  }, []);
+
+  useEffect(() => {
+    poke();
+    return () => {
+      if (idle.current) clearTimeout(idle.current);
+    };
+  }, [poke]);
+
+  useEffect(() => {
+    if (!hint) return;
+    const t = setTimeout(() => {
+      setHint(false);
+      localStorage.setItem(HINT_KEY, "1");
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [hint]);
+
+  // Keep the neighbours decoded so flipping is instant; at most three full-size images live at once.
+  useEffect(() => {
+    const neighbours = [images[i - 1], images[i + 1]].filter((x): x is NonNullable<typeof x> => !!x);
+    const held: string[] = [];
+    let alive = true;
+    for (const n of neighbours) {
+      held.push(n.asset);
+      acquireAssetUrl(platform, aid, n.asset)
+        .then((url) => {
+          if (!alive) return;
+          const img = new Image();
+          img.decoding = "async";
+          img.src = url;
+          img.decode?.().catch(() => {});
+        })
+        .catch(() => {});
+    }
+    return () => {
+      alive = false;
+      for (const p of held) releaseAssetRef(platform, aid, p);
+    };
+  }, [platform, aid, images, i]);
+
+  const toggleFullscreen = useCallback(async () => {
+    const next = !(await platform.isFullscreen());
+    await platform.setFullscreen(next).catch(() => {});
+    setFullscreen(await platform.isFullscreen());
+  }, [platform]);
+
+  useEffect(() => {
+    const on = () => void platform.isFullscreen().then(setFullscreen);
+    document.addEventListener("fullscreenchange", on);
+    return () => document.removeEventListener("fullscreenchange", on);
+  }, [platform]);
+
+  const exit = useCallback(async () => {
+    await flush();
+    if (await platform.isFullscreen()) await platform.setFullscreen(false).catch(() => {});
+    navigate({ name: "editor", id: aid, ...(image ? { image: image.id } : {}) }, true);
+  }, [aid, flush, image, platform]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (isTypingTarget(e.target) || hasModifier(e)) return;
+      switch (e.key) {
+        case "ArrowLeft":
+          go(i - 1);
+          break;
+        case "ArrowRight":
+          go(i + 1);
+          break;
+        case "Home":
+          go(0);
+          break;
+        case "End":
+          go(count - 1);
+          break;
+        case "f":
+        case "F":
+          void toggleFullscreen();
+          break;
+        case "o":
+        case "O":
+          setOverlayOn((v) => !v);
+          break;
+        case "i":
+        case "I":
+          setPicker((v) => !v);
+          break;
+        case "Escape":
+          if (picker) setPicker(false);
+          else
+            void platform.isFullscreen().then((fs) => (fs ? platform.setFullscreen(false).then(() => setFullscreen(false)) : exit()));
+          break;
+        default:
+          return;
+      }
+      e.preventDefault();
+      poke();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen]);
+
+  const pointer = useRef<{ x: number; y: number; t: number } | null>(null);
+  const lastTap = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPointerDown = (e: React.PointerEvent) => {
+    pointer.current = { x: e.clientX, y: e.clientY, t: performance.now() };
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    const start = pointer.current;
+    pointer.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      go(dx < 0 ? i + 1 : i - 1);
+      return;
+    }
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && performance.now() - start.t < 400) {
+      const now = performance.now();
+      if (now - lastTap.current < 300) {
+        if (tapTimer.current) clearTimeout(tapTimer.current);
+        lastTap.current = 0;
+        setFit((f) => (f === "contain" ? "cover" : "contain"));
+        return;
+      }
+      lastTap.current = now;
+      tapTimer.current = setTimeout(() => {
+        setControls((c) => {
+          if (!c) poke();
+          return !c;
+        });
+      }, 260);
+    }
+  };
+
+  if (!image) {
+    return (
+      <div className="present center-message">
+        <p>This assignment has no images yet.</p>
+        <Button onClick={() => void exit()}>Back to editor</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`present ${controls ? "controls-on" : "controls-off"}`}
+      onPointerMove={(e) => e.pointerType === "mouse" && poke()}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      role="region"
+      aria-label={`Presentation, image ${i + 1} of ${count}`}
+    >
+      <PhotoStage
+        assignmentId={aid}
+        image={image}
+        fitMode={fit}
+        overlay={manifest.presentation.overlay}
+        showOverlay={overlayOn}
+        className="present-stage"
+      />
+
+      <div className="present-counter mono" aria-live="polite">
+        {i + 1} / {count}
+      </div>
+
+      <div className="present-controls" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+        <div className="present-top">
+          <IconButton label="Exit presentation (Esc)" onClick={() => void exit()} className="on-photo">
+            <X size={20} />
+          </IconButton>
+          <div className="present-top-right">
+            <IconButton label={overlayOn ? "Hide overlay (O)" : "Show overlay (O)"} onClick={() => setOverlayOn((v) => !v)} className="on-photo" aria-pressed={overlayOn}>
+              <Type size={18} />
+            </IconButton>
+            <IconButton label="Show on photo (I)" onClick={() => setPicker((v) => !v)} className="on-photo" aria-pressed={picker}>
+              <SlidersHorizontal size={18} />
+            </IconButton>
+            <IconButton label={fullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"} onClick={() => void toggleFullscreen()} className="on-photo">
+              {fullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            </IconButton>
+          </div>
+        </div>
+        <IconButton label="Previous image (←)" className="present-nav present-prev on-photo" disabled={i === 0} onClick={() => go(i - 1)}>
+          <ChevronLeft size={28} />
+        </IconButton>
+        <IconButton label="Next image (→)" className="present-nav present-next on-photo" disabled={i === count - 1} onClick={() => go(i + 1)}>
+          <ChevronRight size={28} />
+        </IconButton>
+      </div>
+
+      {hint ? (
+        <p className="present-hint small">
+          {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · O overlay · I fields · F fullscreen · Esc to leave
+        </p>
+      ) : null}
+
+      {picker ? (
+        <FieldPicker
+          presentation={manifest.presentation}
+          onChange={(presentation) => {
+            update((m) => ({ ...m, presentation, modifiedAt: new Date().toISOString() }));
+            setOverlayOn(true);
+          }}
+          onClose={() => setPicker(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
