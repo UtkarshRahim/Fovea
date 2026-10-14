@@ -1,3 +1,5 @@
+> **Note:** This is the original build specification, kept for reference. The product has since been named **Frame Note** and the file format uses `.framenote` (`"format": "framenote"`). Where this document says FIELDNOTE or `.fieldnote`, read Frame Note / `.framenote`. Product decisions made after this spec are in `DECISIONS.md`.
+
 # FIELDNOTE — Build Specification
 
 A local-first photography presentation and review tool for wildlife photographers. Desktop (Tauri 2) plus a responsive, installable PWA that share one codebase and one portable file format (`.fieldnote`).
