@@ -45,15 +45,15 @@ describe("presentation", () => {
 
   it("navigates with swipe gestures", () => {
     setup();
-    const region = screen.getByRole("region");
-    fireEvent.pointerDown(region, { clientX: 600, clientY: 300 });
-    fireEvent.pointerUp(region, { clientX: 300, clientY: 310 });
+    const region = screen.getByTestId("photo-stage");
+    fireEvent.pointerDown(region, { clientX: 600, clientY: 300, pointerId: 1 });
+    fireEvent.pointerUp(region, { clientX: 300, clientY: 310, pointerId: 1 });
     expect(counter()).toBe("2 / 3");
-    fireEvent.pointerDown(region, { clientX: 300, clientY: 300 });
-    fireEvent.pointerUp(region, { clientX: 600, clientY: 290 });
+    fireEvent.pointerDown(region, { clientX: 300, clientY: 300, pointerId: 1 });
+    fireEvent.pointerUp(region, { clientX: 600, clientY: 290, pointerId: 1 });
     expect(counter()).toBe("1 / 3");
-    fireEvent.pointerDown(region, { clientX: 300, clientY: 100 });
-    fireEvent.pointerUp(region, { clientX: 340, clientY: 400 });
+    fireEvent.pointerDown(region, { clientX: 300, clientY: 100, pointerId: 1 });
+    fireEvent.pointerUp(region, { clientX: 340, clientY: 400, pointerId: 1 });
     expect(counter()).toBe("1 / 3");
   });
 

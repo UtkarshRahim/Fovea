@@ -39,7 +39,7 @@ export interface ImportedFramenote {
 /** The UI depends only on this interface. Web uses IndexedDB, desktop uses Tauri commands. */
 export interface Platform {
   kind: "web" | "desktop";
-  capabilities: { rawImport: boolean; folderImport: boolean; nativeFullscreen: boolean };
+  capabilities: { rawImport: boolean; folderImport: boolean; projectFolderImport: boolean; nativeFullscreen: boolean };
 
   listAssignments(): Promise<AssignmentSummary[]>;
   createAssignment(title: string): Promise<Manifest>;
@@ -63,6 +63,8 @@ export interface Platform {
 
   /** Picks a .framenote file, validates and stores it. Returns null if cancelled. */
   importFramenote(file?: File): Promise<ImportedFramenote | null>;
+  /** Picks an unzipped .framenote folder (manifest.json + assets/) and stores it as a project. Returns null if cancelled. */
+  importProjectFolder(): Promise<ImportedFramenote | null>;
   exportFramenote(m: Manifest, opts: { stripGps: boolean }): Promise<SavedFile | null>;
   saveExportedImage(data: Blob, filename: string): Promise<SavedFile | null>;
 

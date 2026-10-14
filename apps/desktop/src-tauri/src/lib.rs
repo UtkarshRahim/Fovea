@@ -1,4 +1,5 @@
 mod exiftool;
+mod folder;
 mod pipeline;
 mod preview;
 mod storage;
@@ -140,6 +141,19 @@ fn write_file(request: Request<'_>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn list_folder(path: String) -> Result<Vec<folder::FolderEntry>, String> {
+    folder::list(&PathBuf::from(path))
+}
+
+/// Reads one file inside a folder the user picked (used for importing an unzipped project).
+#[tauri::command]
+async fn read_folder_file(root: String, path: String) -> Result<Response, String> {
+    tauri::async_runtime::spawn_blocking(move || folder::read(&PathBuf::from(root), &path).map(Response::new))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 fn scan_folder(path: String) -> Result<Vec<String>, String> {
     Ok(pipeline::scan_folder(&PathBuf::from(path))?.into_iter().map(|p| p.to_string_lossy().into_owned()).collect())
 }
@@ -199,6 +213,8 @@ pub fn run() {
             read_file,
             write_file,
             scan_folder,
+            list_folder,
+            read_folder_file,
             import_images,
             cancel_import
         ])

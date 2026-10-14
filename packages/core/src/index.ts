@@ -1,6 +1,7 @@
 export * from "./manifest";
 export * from "./validate";
 export * from "./archive";
+export * from "./folder";
 export * from "./checksum";
 export * from "./format";
 export * from "./normalize";

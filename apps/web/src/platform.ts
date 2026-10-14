@@ -8,8 +8,10 @@ import {
   safeBundleFilename,
   SAFE_CANVAS_PIXELS,
   summarize,
+  unpackFolder,
   unpackFramenote,
   type Manifest,
+  type UnpackedFramenote,
 } from "@framenote/core";
 import type { AddImagesResult, ImportProgress, Platform, SavedFile } from "@framenote/ui";
 import { ACCEPT_IMAGES, processFile } from "./process";
@@ -32,6 +34,26 @@ function pickFiles(accept: string | undefined, multiple: boolean): Promise<File[
     input.type = "file";
     input.multiple = multiple;
     if (accept && !isIOS()) input.accept = accept;
+    input.style.display = "none";
+    document.body.appendChild(input);
+    const done = (files: File[]) => {
+      input.remove();
+      resolve(files);
+    };
+    input.addEventListener("change", () => done(Array.from(input.files ?? [])), { once: true });
+    input.addEventListener("cancel", () => done([]), { once: true });
+    input.click();
+  });
+}
+
+export const supportsFolderPicker = () =>
+  typeof HTMLInputElement !== "undefined" && "webkitdirectory" in HTMLInputElement.prototype && !isIOS();
+
+function pickFolder(): Promise<File[]> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.webkitdirectory = true;
     input.style.display = "none";
     document.body.appendChild(input);
     const done = (files: File[]) => {
@@ -67,7 +89,7 @@ async function deliverFile(blob: Blob, filename: string): Promise<SavedFile | nu
 
 export class WebPlatform implements Platform {
   kind = "web" as const;
-  capabilities = { rawImport: false, folderImport: false, nativeFullscreen: typeof document !== "undefined" && !!document.fullscreenEnabled };
+  capabilities = { rawImport: false, folderImport: false, projectFolderImport: supportsFolderPicker(), nativeFullscreen: typeof document !== "undefined" && !!document.fullscreenEnabled };
   maxCanvasPixels = isMobile() ? SAFE_CANVAS_PIXELS : 64_000_000;
   private db: Promise<IDBPDatabase<FramenoteDB>>;
   private cancelled = false;
@@ -104,13 +126,13 @@ export class WebPlatform implements Platform {
   async loadAssignment(id: string) {
     const db = await this.db;
     const m = await db.get("assignments", id);
-    if (!m) throw new Error("This assignment no longer exists on this device.");
+    if (!m) throw new Error("This project no longer exists on this device.");
     const manifest = parseManifest(m);
     void this.collectGarbage(manifest);
     return manifest;
   }
 
-  /** Removes stored blobs for images that were removed from the assignment. */
+  /** Removes stored blobs for images that were removed from the project. */
   private async collectGarbage(m: Manifest) {
     const db = await this.db;
     const keep = new Set(m.images.flatMap((i) => [assetKey(m.assignmentId, i.asset), assetKey(m.assignmentId, i.thumbnail)]));
@@ -182,7 +204,7 @@ export class WebPlatform implements Platform {
       } catch (e) {
         const message =
           e instanceof DOMException && e.name === "QuotaExceededError"
-            ? "Browser storage is full. Export and delete older assignments to free space."
+            ? "Browser storage is full. Export and delete older projects to free space."
             : e instanceof Error
               ? e.message
               : String(e);
@@ -202,8 +224,23 @@ export class WebPlatform implements Platform {
   async importFramenote(file?: File) {
     const picked = file ?? (await pickFiles(".framenote,application/zip", false))[0];
     if (!picked) return null;
-    const data = new Uint8Array(await picked.arrayBuffer());
-    const unpacked = await unpackFramenote(data);
+    return this.storeUnpacked(await unpackFramenote(new Uint8Array(await picked.arrayBuffer())));
+  }
+
+  async importProjectFolder() {
+    const files = await pickFolder();
+    if (!files.length) return null;
+    const unpacked = await unpackFolder(
+      files.map((f) => ({
+        path: f.webkitRelativePath || f.name,
+        size: f.size,
+        read: async () => new Uint8Array(await f.arrayBuffer()),
+      })),
+    );
+    return this.storeUnpacked(unpacked);
+  }
+
+  private async storeUnpacked(unpacked: UnpackedFramenote) {
     const db = await this.db;
     const existing = await db.getAllKeys("assignments");
     const manifest = resolveImportCollision(unpacked.manifest, existing);

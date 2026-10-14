@@ -40,6 +40,6 @@ export function exportFilename(originalFilename: string, format: "jpeg" | "png")
 }
 
 export function safeBundleFilename(title: string): string {
-  const base = title.replace(/[^A-Za-z0-9._ -]+/g, "_").trim().slice(0, 80) || "assignment";
+  const base = title.replace(/[^A-Za-z0-9._ -]+/g, "_").trim().slice(0, 80) || "project";
   return `${base}.framenote`;
 }

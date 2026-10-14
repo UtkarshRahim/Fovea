@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { act, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../src/App";
 import { useAutosave } from "../src/hooks/useAutosave";
@@ -42,6 +42,8 @@ describe("autosave", () => {
 });
 
 describe("editor", () => {
+  beforeEach(() => localStorage.setItem("framenote.reviewMode", "1"));
+
   it("edits a caption, autosaves, and keeps camera data read-only", async () => {
     const manifest = sampleManifest(2);
     const { platform, store } = fakePlatform([manifest]);
@@ -89,6 +91,46 @@ describe("editor", () => {
     const { platform } = fakePlatform([]);
     location.hash = "#/";
     render(<App platform={platform} />);
-    expect(await screen.findByText("No assignments yet")).toBeInTheDocument();
+    expect(await screen.findByText("No projects yet")).toBeInTheDocument();
+  });
+
+  it("opens in view mode with only the photo, and R toggles review panels", async () => {
+    localStorage.setItem("framenote.reviewMode", "0");
+    const manifest = sampleManifest(3);
+    const { platform } = fakePlatform([manifest]);
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    expect(await screen.findByRole("button", { name: /Review/ })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByRole("textbox", { name: "Caption" })).not.toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Images in this project" })).toBeInTheDocument();
+    await user.keyboard("r");
+    expect(await screen.findByRole("textbox", { name: "Caption" })).toBeInTheDocument();
+    expect(localStorage.getItem("framenote.reviewMode")).toBe("1");
+  });
+
+  it("swipes between photos on the main stage", async () => {
+    localStorage.setItem("framenote.reviewMode", "0");
+    const manifest = sampleManifest(3);
+    const { platform } = fakePlatform([manifest]);
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const stage = await screen.findByTestId("photo-stage");
+    fireEvent.pointerDown(stage, { clientX: 600, clientY: 300, pointerId: 1 });
+    fireEvent.pointerUp(stage, { clientX: 300, clientY: 310, pointerId: 1 });
+    expect(screen.getByText("2 / 3")).toBeInTheDocument();
+  });
+
+  it("switches project from the title menu", async () => {
+    const a = sampleManifest(1);
+    const b = { ...sampleManifest(2), title: "Kabini Dusk" };
+    const { platform } = fakePlatform([a, b]);
+    location.hash = `#/a/${a.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /Switch project/ }));
+    await user.click(await screen.findByRole("menuitem", { name: /Kabini Dusk/ }));
+    await waitFor(() => expect(location.hash).toBe(`#/a/${b.assignmentId}`));
+    expect(await screen.findByRole("button", { name: /Project: Kabini Dusk/ })).toBeInTheDocument();
   });
 });

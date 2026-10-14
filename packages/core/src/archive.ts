@@ -246,14 +246,14 @@ export async function unpackFramenote(data: Uint8Array, limits: Limits = LIMITS)
   return { manifest, assets, warnings, checksumMismatches };
 }
 
-export const README_TEXT = `FRAME NOTE ASSIGNMENT
-=====================
+export const README_TEXT = `FRAME NOTE PROJECT
+==================
 
 This .framenote file is a standard ZIP archive created by Frame Note, a
 presentation and review tool for photographers.
 
 Contents
-  manifest.json        Assignment title, notes, image order, captions,
+  manifest.json        Project title, notes, image order, captions,
                        camera metadata and presentation settings (JSON).
   assets/images/       Presentation-ready JPEG images.
   assets/thumbnails/   Small preview images.

@@ -6,7 +6,7 @@ import { useAutosave } from "../hooks/useAutosave";
 import { acquireAssetUrl, releaseAssetRef } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
 import { hasModifier, isTypingTarget } from "../lib/keys";
-import { PhotoStage } from "../components/PhotoStage";
+import { PhotoStage, zoomLabel, type PhotoStageHandle, type ZoomInfo } from "../components/PhotoStage";
 import { FieldPicker } from "../components/FieldPicker";
 import { Button, IconButton } from "../components/primitives";
 import { describeError } from "./Library";
@@ -32,7 +32,7 @@ export function Present({ id, index, mode }: { id: string; index: number; mode: 
     return (
       <div className="center-message">
         <p>{error}</p>
-        <Button onClick={() => navigate({ name: "library" })}>Back to library</Button>
+        <Button onClick={() => navigate({ name: "library" })}>All projects</Button>
       </div>
     );
   if (!manifest) return <div className="present present-loading" aria-busy="true" />;
@@ -46,16 +46,16 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
   const count = images.length;
   const [i, setI] = useState(() => Math.min(index, Math.max(0, count - 1)));
   const [overlayOn, setOverlayOn] = useState(mode === "present" ? manifest.presentation.overlay.visible : false);
-  const [fit, setFit] = useState(manifest.presentation.fitMode);
+  const fit = manifest.presentation.fitMode;
   const [picker, setPicker] = useState(false);
   const [controls, setControls] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [hint, setHint] = useState(() => !localStorage.getItem(HINT_KEY));
+  const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
+  const stage = useRef<PhotoStageHandle>(null);
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const image = images[i];
   const aid = manifest.assignmentId;
-
-  useEffect(() => setFit(manifest.presentation.fitMode), [manifest.presentation.fitMode]);
 
   const go = useCallback(
     (next: number) => {
@@ -157,8 +157,20 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         case "I":
           setPicker((v) => !v);
           break;
+        case "+":
+        case "=":
+          stage.current?.zoomBy(1.5);
+          break;
+        case "-":
+        case "_":
+          stage.current?.zoomBy(1 / 1.5);
+          break;
+        case "0":
+          stage.current?.resetZoom();
+          break;
         case "Escape":
           if (picker) setPicker(false);
+          else if (zoom.scale > 1.01) stage.current?.resetZoom();
           else
             void platform.isFullscreen().then((fs) => (fs ? platform.setFullscreen(false).then(() => setFullscreen(false)) : exit()));
           break;
@@ -170,46 +182,20 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen]);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale]);
 
-  const pointer = useRef<{ x: number; y: number; t: number } | null>(null);
-  const lastTap = useRef(0);
-  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onPointerDown = (e: React.PointerEvent) => {
-    pointer.current = { x: e.clientX, y: e.clientY, t: performance.now() };
-  };
-  const onPointerUp = (e: React.PointerEvent) => {
-    const start = pointer.current;
-    pointer.current = null;
-    if (!start) return;
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      go(dx < 0 ? i + 1 : i - 1);
-      return;
-    }
-    if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && performance.now() - start.t < 400) {
-      const now = performance.now();
-      if (now - lastTap.current < 300) {
-        if (tapTimer.current) clearTimeout(tapTimer.current);
-        lastTap.current = 0;
-        setFit((f) => (f === "contain" ? "cover" : "contain"));
-        return;
-      }
-      lastTap.current = now;
-      tapTimer.current = setTimeout(() => {
-        setControls((c) => {
-          if (!c) poke();
-          return !c;
-        });
-      }, 260);
-    }
-  };
+  const toggleControls = useCallback(() => {
+    setControls((c) => {
+      if (!c) poke();
+      return !c;
+    });
+  }, [poke]);
+  const swipe = useCallback((d: 1 | -1) => go(i + d), [go, i]);
 
   if (!image) {
     return (
       <div className="present center-message">
-        <p>This assignment has no images yet.</p>
+        <p>This project has no images yet.</p>
         <Button onClick={() => void exit()}>Back to editor</Button>
       </div>
     );
@@ -219,23 +205,30 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     <div
       className={`present ${controls ? "controls-on" : "controls-off"}`}
       onPointerMove={(e) => e.pointerType === "mouse" && poke()}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
       role="region"
       aria-label={`Presentation, image ${i + 1} of ${count}`}
     >
       <PhotoStage
+        ref={stage}
         assignmentId={aid}
         image={image}
         fitMode={fit}
         overlay={manifest.presentation.overlay}
         showOverlay={overlayOn}
         className="present-stage"
+        onSwipe={swipe}
+        onTap={toggleControls}
+        onZoomChange={setZoom}
       />
 
       <div className="present-counter mono" aria-live="polite">
         {i + 1} / {count}
       </div>
+      {zoom.scale > 1.01 ? (
+        <button type="button" className="present-zoom mono on-photo" onClick={() => stage.current?.resetZoom()} title="Fit to screen (0)">
+          {zoomLabel(zoom)}
+        </button>
+      ) : null}
 
       <div className="present-controls" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
         <div className="present-top">
@@ -264,7 +257,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
 
       {hint ? (
         <p className="present-hint small">
-          {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · O overlay · I fields · F fullscreen · Esc to leave
+          {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · pinch, double-tap or + − to zoom · O overlay · I fields · F fullscreen · Esc to leave
         </p>
       ) : null}
 

@@ -136,7 +136,7 @@ export function CommentsSection({
           ))}
         </ul>
       ) : (
-        <p className="muted small">No comments yet. Anyone reviewing this assignment can leave one.</p>
+        <p className="muted small">No comments yet. Anyone reviewing this project can leave one.</p>
       )}
       <form className="comment-form" onSubmit={submit}>
         <label className="field">

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -53,7 +53,7 @@ export function Filmstrip({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-        <ol className="filmstrip" aria-label="Images in this assignment">
+        <ol className="filmstrip" aria-label="Images in this project">
           {images.map((img, i) => (
             <FilmstripItem
               key={img.id}
@@ -121,6 +121,59 @@ const FilmstripItem = memo(function FilmstripItem({
           <Trash2 size={15} />
         </IconButton>
       </div>
+    </li>
+  );
+});
+
+/** Horizontal strip used in view mode: select only, no reordering. */
+export function ThumbStrip({
+  assignmentId,
+  images,
+  selectedId,
+  onSelect,
+}: {
+  assignmentId: string;
+  images: ImageEntry[];
+  selectedId?: string;
+  onSelect: (id: string) => void;
+}) {
+  const ref = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    ref.current?.querySelector<HTMLElement>("[aria-current='true']")?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [selectedId]);
+  return (
+    <ol ref={ref} className="thumbstrip" aria-label="Images in this project">
+      {images.map((img, i) => (
+        <ThumbStripItem key={img.id} assignmentId={assignmentId} image={img} index={i} selected={img.id === selectedId} onSelect={onSelect} />
+      ))}
+    </ol>
+  );
+}
+
+const ThumbStripItem = memo(function ThumbStripItem({
+  assignmentId,
+  image,
+  index,
+  selected,
+  onSelect,
+}: {
+  assignmentId: string;
+  image: ImageEntry;
+  index: number;
+  selected: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const url = useAssetUrl(assignmentId, image.thumbnail);
+  return (
+    <li className={`thumbstrip-item ${selected ? "is-selected" : ""}`}>
+      <button type="button" className="film-thumb" onClick={() => onSelect(image.id)} aria-current={selected ? "true" : undefined}>
+        {url ? <img src={url} alt="" loading="lazy" draggable={false} /> : <span className="film-thumb-empty" />}
+        {image.comments.length ? <span className="thumb-badge mono">{image.comments.length}</span> : null}
+        <span className="sr-only">
+          Image {index + 1}: {image.user.caption || image.originalFilename}
+          {image.comments.length ? `, ${image.comments.length} comments` : ""}
+        </span>
+      </button>
     </li>
   );
 });

@@ -12,9 +12,11 @@ import {
   resolveImportCollision,
   safeBundleFilename,
   summarize,
+  unpackFolder,
   unpackFramenote,
   type AssetSource,
   type Manifest,
+  type UnpackedFramenote,
 } from "@framenote/core";
 import type { AddImagesResult, ImportProgress, Platform } from "@framenote/ui";
 
@@ -47,7 +49,7 @@ function bytes(buf: ArrayBuffer | Uint8Array | number[]): Uint8Array {
 
 export class DesktopPlatform implements Platform {
   kind = "desktop" as const;
-  capabilities = { rawImport: true, folderImport: true, nativeFullscreen: true };
+  capabilities = { rawImport: true, folderImport: true, projectFolderImport: true, nativeFullscreen: true };
   maxCanvasPixels = 120_000_000;
   private dirs = new Map<string, string>();
 
@@ -67,7 +69,7 @@ export class DesktopPlatform implements Platform {
       try {
         out.push(summarize(parseManifest(JSON.parse(json))));
       } catch {
-        /* unreadable assignment folders are skipped */
+        /* unreadable project folders are skipped */
       }
     }
     return out;
@@ -157,10 +159,27 @@ export class DesktopPlatform implements Platform {
   }
 
   async importFramenote() {
-    const path = await open({ multiple: false, title: "Open a .framenote file", filters: [{ name: "Frame Note assignment", extensions: ["framenote"] }] });
+    const path = await open({ multiple: false, title: "Open a .framenote file", filters: [{ name: "Frame Note project", extensions: ["framenote"] }] });
     if (!path || Array.isArray(path)) return null;
     const data = bytes(await invoke<ArrayBuffer>("read_file", { path }));
-    const unpacked = await unpackFramenote(data);
+    return this.storeUnpacked(await unpackFramenote(data));
+  }
+
+  async importProjectFolder() {
+    const root = await open({ directory: true, multiple: false, title: "Choose an unzipped Frame Note project folder" });
+    if (!root || Array.isArray(root)) return null;
+    const listed = await invoke<{ path: string; size: number }[]>("list_folder", { path: root });
+    const unpacked = await unpackFolder(
+      listed.map((f) => ({
+        path: f.path,
+        size: f.size,
+        read: async () => bytes(await invoke<ArrayBuffer>("read_folder_file", { root, path: f.path })),
+      })),
+    );
+    return this.storeUnpacked(unpacked);
+  }
+
+  private async storeUnpacked(unpacked: UnpackedFramenote) {
     const existing = (await this.listAssignments()).map((a) => a.id);
     const manifest = resolveImportCollision(unpacked.manifest, existing);
     await this.dir(manifest.assignmentId);
@@ -170,7 +189,7 @@ export class DesktopPlatform implements Platform {
   }
 
   async exportFramenote(m: Manifest, opts: { stripGps: boolean }) {
-    const path = await save({ defaultPath: safeBundleFilename(m.title), filters: [{ name: "Frame Note assignment", extensions: ["framenote"] }] });
+    const path = await save({ defaultPath: safeBundleFilename(m.title), filters: [{ name: "Frame Note project", extensions: ["framenote"] }] });
     if (!path) return null;
     const target = path.toLowerCase().endsWith(".framenote") ? path : `${path}.framenote`;
     const data = await packFramenote(m, (p) => this.readAsset(m.assignmentId, p), { stripGps: opts.stripGps, appVersion: APP_VERSION, platform: "desktop" });

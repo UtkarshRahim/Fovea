@@ -535,6 +535,14 @@ select {
 .library-foot {
   margin-top: auto;
 }
+@media (max-width: 480px) {
+  .hide-xs {
+    display: none;
+  }
+  .thumbstrip-item {
+    width: 76px;
+  }
+}
 @media (max-width: 640px) {
   .assignment-row {
     grid-template-columns: 72px 1fr;
@@ -557,16 +565,6 @@ select {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-}
-.editor-topbar .title-input {
-  max-width: 360px;
-  border-color: transparent;
-  background: transparent;
-  font-weight: 500;
-  font-size: 15px;
-}
-.editor-topbar .title-input:hover {
-  border-color: var(--border);
 }
 .save-status {
   font-size: 12.5px;
@@ -796,6 +794,223 @@ select {
   font-weight: 500;
 }
 
+/* View mode: just the photo and a strip of thumbnails */
+.editor.is-view .editor-body {
+  grid-template-columns: 1fr;
+}
+.thumbstrip {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2) max(var(--space-3), env(safe-area-inset-right)) max(var(--space-2), env(safe-area-inset-bottom))
+    max(var(--space-3), env(safe-area-inset-left));
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+.thumbstrip-item {
+  flex: none;
+  width: 92px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 2px;
+}
+.thumbstrip-item.is-selected {
+  border-color: var(--accent);
+}
+.thumb-badge,
+.count-badge {
+  font-size: 11px;
+  line-height: 16px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  text-align: center;
+}
+.thumb-badge {
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.count-badge {
+  background: var(--border-strong);
+}
+.review-toggle[aria-pressed="true"] {
+  background: #2a2925;
+  border-color: var(--accent);
+}
+
+.stage-controls {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-3);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(16, 16, 16, 0.78);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  z-index: 2;
+}
+.stage-controls .icon-btn {
+  width: 34px;
+  height: 34px;
+}
+.stage-count {
+  font-size: 12px;
+  min-width: 52px;
+  text-align: center;
+}
+.stage-controls-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border-strong);
+  margin: 0 4px;
+}
+.stage-zoom-label {
+  background: none;
+  border: 0;
+  font-size: 12px;
+  min-width: 46px;
+  height: 34px;
+  cursor: pointer;
+  color: var(--text);
+}
+.stage-zoom-label:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+.import-status {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  width: min(360px, calc(100% - 24px));
+  padding: var(--space-3);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  z-index: 3;
+}
+.present-zoom {
+  position: absolute;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: auto;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Project switcher and menus */
+.project-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 360px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 15px;
+}
+.project-switcher:hover,
+.project-switcher[data-state="open"] {
+  border-color: var(--border);
+  background: #1e1e1d;
+}
+.project-switcher-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.menu {
+  min-width: 240px;
+  max-width: min(360px, calc(100vw - 16px));
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: var(--space-1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 50;
+}
+.menu-scroll {
+  max-height: min(50dvh, 360px);
+  overflow-y: auto;
+}
+.menu-label {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font: 600 11px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+.menu-item[data-highlighted] {
+  background: #2a2a29;
+}
+.menu-check {
+  width: 18px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--accent);
+}
+.menu-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+}
+.menu-sub {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: normal;
+}
+.menu-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+.menu-note {
+  padding: var(--space-2) var(--space-3);
+  color: var(--muted);
+  font-size: 13px;
+}
+.menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: var(--space-1) 0;
+}
+
 @media (max-width: 1100px) {
   .editor-body {
     grid-template-columns: 170px 1fr 300px;
@@ -805,16 +1020,20 @@ select {
   }
 }
 @media (max-width: 820px) {
-  .editor {
+  .editor.is-review {
     height: auto;
     min-height: 100dvh;
   }
+  .editor.is-view .editor-center {
+    flex: 1;
+    height: auto;
+  }
+  .project-switcher {
+    flex: 1;
+    max-width: none;
+  }
   .editor-topbar {
     flex-wrap: wrap;
-  }
-  .editor-topbar .title-input {
-    flex: 1;
-    min-width: 0;
   }
   .editor-topbar .topbar-actions {
     width: 100%;
@@ -857,6 +1076,12 @@ select {
   position: absolute;
   inset: 0;
   overflow: hidden;
+}
+.stage.is-zoomed {
+  cursor: grab;
+}
+.stage.is-zoomed:active {
+  cursor: grabbing;
 }
 .stage-img {
   position: absolute;
@@ -957,7 +1182,7 @@ select {
   inset: 0;
   background: #000;
   height: 100dvh;
-  touch-action: pan-y pinch-zoom;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;

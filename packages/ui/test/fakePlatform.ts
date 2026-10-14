@@ -26,7 +26,7 @@ export function fakePlatform(initial: Manifest[] = []) {
   const store = new Map(initial.map((m) => [m.assignmentId, m]));
   const p: Platform = {
     kind: "web",
-    capabilities: { rawImport: false, folderImport: false, nativeFullscreen: false },
+    capabilities: { rawImport: false, folderImport: false, projectFolderImport: true, nativeFullscreen: false },
     maxCanvasPixels: 16_000_000,
     listAssignments: vi.fn(async () => [...store.values()].map(summarize)),
     createAssignment: vi.fn(async (title: string) => {
@@ -51,6 +51,7 @@ export function fakePlatform(initial: Manifest[] = []) {
     addImages: vi.fn(async () => null),
     cancelAddImages: vi.fn(),
     importFramenote: vi.fn(async () => null),
+    importProjectFolder: vi.fn(async () => null),
     exportFramenote: vi.fn(async () => ({ location: "downloads" })),
     saveExportedImage: vi.fn(async () => ({ location: "downloads" })),
     setFullscreen: vi.fn(async () => {}),
