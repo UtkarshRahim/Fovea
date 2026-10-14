@@ -12,6 +12,8 @@ a Windows PC, or in the browser on an Android phone, iPhone or iPad, with no ins
   captions, present with touch gestures, and export. Works offline after the first visit.
 - **Nothing leaves your device.** No accounts, uploads, analytics or AI services.
 
+New to Frame Note? The [how-to guide](docs/HOW-TO.md) walks through every screen with screenshots.
+
 ## Install on a Mac
 
 The `.dmg` is not signed with an Apple Developer ID, so macOS blocks it the first time. Drag *Frame Note* to
