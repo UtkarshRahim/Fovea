@@ -3,7 +3,7 @@
 A local-first presentation and review tool for wildlife photographers.
 
 Open a folder of camera RAW files, see the original camera data, caption each photograph, present fullscreen with a
-clean metadata overlay, and hand the whole assignment to someone else as one `.framenote` file. They open it on a Mac,
+clean metadata overlay, and hand the whole project to someone else as one `.framenote` file. They open it on a Mac,
 a Windows PC, or in the browser on an Android phone, iPhone or iPad, with no install and no account.
 
 - **Desktop app** for macOS and Windows (Tauri 2 + Rust): RAW import (NEF, CR2, CR3, ARW, plus JPEG/TIFF/PNG), ExifTool
@@ -34,20 +34,29 @@ Windows instructions are under [Opening the unsigned apps](#opening-the-unsigned
 
 | | Desktop | Phone / browser |
 |---|---|---|
-| Create, rename, delete assignments | ✓ | ✓ |
+| Create, rename, delete, switch projects | ✓ | ✓ |
+| View mode: photo first, swipe or arrow keys between photos | ✓ | ✓ |
+| Zoom: pinch, trackpad, Ctrl/⌘ + wheel, double-click/tap, `+` `−` `0` | ✓ | ✓ |
+| Review mode (`R`): notes, comments, camera data, reordering, export | ✓ | ✓ |
 | Add RAW files (NEF, CR2, CR3, ARW) | ✓ embedded full-size preview + ExifTool metadata | ✓ embedded preview; metadata via exifr (not CR3) |
 | Add JPEG / PNG | ✓ | ✓ |
 | Add TIFF | ✓ | Safari only |
 | Add a whole folder | ✓ | — |
-| Captions, species, location, assignment notes | ✓ | ✓ |
+| Captions, species, location, project notes | ✓ | ✓ |
 | Review comments (anyone, optional name) | ✓ | ✓ |
 | Drag or keyboard reordering | ✓ | ✓ (long-press drag, or arrow buttons) |
 | Fullscreen presentation, overlay, "Show on photo" picker | ✓ | ✓ (iPhone: no Fullscreen API, chrome is hidden instead) |
 | Export image with overlay (JPEG/PNG) | ✓ | ✓ (downscaled to the 16 MP canvas limit on phones) |
 | Export / import `.framenote` | ✓ | ✓ (share sheet on phones) |
+| Import an unzipped `.framenote` folder | ✓ | ✓ desktop browsers and Android; not iPhone/iPad (import the `.framenote` instead) |
 
 **Not yet:** full RAW decoding for files with no usable embedded preview, HEIC, video, and automatic phone ↔ desktop
 sync (sync is by hand with `.framenote` files; see `docs/SYNC.md`).
+
+**View and review.** A project opens in view mode: the photo, a thumbnail strip and a small control bar. Notes,
+comments, camera data, reordering and export live behind the **Review** button (or `R`); the app remembers which mode
+you used last. Zooming goes up to twice the stored preview's actual pixels. Imported photos are stored at up to
+4096 px on the long edge, so 100% is 100% of that preview, not of the original RAW.
 
 RAW files are shown from the camera's embedded JPEG preview. On the tested cameras that preview is full resolution,
 but its colour follows the camera's JPEG settings, not a RAW development. The app says so wherever it matters.

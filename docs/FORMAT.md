@@ -89,6 +89,14 @@ A reader **must**:
 6. Never overwrite an existing assignment. If `assignmentId` exists, import a copy with a new id and the title suffix
    " (imported)".
 
+### Unzipped folders
+
+A folder made by unzipping a `.framenote` can be imported directly. The reader looks for the shallowest
+`manifest.json` (so picking its parent folder also works) and refuses a folder with two at the same depth. Rules 1, 3,
+4, 5 and 6 apply as above. Rule 2 is relaxed: files the manifest doesn't reference, and `.DS_Store`, `Thumbs.db`,
+`desktop.ini`, `._*` and `__MACOSX/`, are ignored, and an image whose asset or thumbnail is missing is dropped. Each
+case produces a warning.
+
 ## Versioning
 
 `formatVersion` is an integer. A change that existing readers cannot ignore bumps it and adds an entry to

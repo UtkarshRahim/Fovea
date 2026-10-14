@@ -96,3 +96,18 @@ Short record of implementation choices and their trade-offs. Newest at the botto
 - **Scale.** Metrics are defined for a 1920 px long edge and scale proportionally. On small screens the live
   overlay has a minimum scale for legibility, so on phones it is drawn slightly larger than in a proportional
   export. Exports are always proportional.
+
+## Projects, view mode and zoom
+
+- **"Project" in the interface, `assignment` in the format.** The UI says project everywhere. The manifest keeps
+  `assignmentId` and the desktop data folder stays `assignments/`, so files and data from earlier builds still open.
+- **View first, review behind a toggle.** The editor opens with only the photo, a thumbnail strip and a control bar.
+  Review mode adds the filmstrip with reorder/remove, the notes/comments/camera panel and the export buttons. The
+  choice is stored per device (`localStorage`), not in the project file.
+- **Zoom is drawn, not CSS-transformed.** The zoomed rectangle is applied as the image's position and size, so the
+  browser resamples from the full image instead of scaling a rasterised layer. The overlay hides while zoomed.
+  Double-tap zooms (it used to toggle fit/fill; fit mode is still in the presentation settings).
+- **Folder import is lenient where ZIP import is strict.** An unzipped folder may have picked up `.DS_Store`,
+  `__MACOSX` or other files, or lost some. Unreferenced files are ignored and images with missing files are dropped,
+  each with a warning. Path safety, size limits and checksums are the same as for `.framenote` files. On desktop the
+  folder is listed and read by Rust commands that refuse paths outside the chosen folder and skip symlinks.
