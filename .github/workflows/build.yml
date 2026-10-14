@@ -1,0 +1,124 @@
+name: Build and deploy
+
+# - Push to main: run the tests and refresh the web app on GitHub Pages.
+# - Push a tag like v0.1.0: build the .dmg and .exe and attach them to a draft release.
+# - Actions tab → "Build and deploy" → Run workflow: pick what to build.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      desktop:
+        description: "Build the macOS .dmg and Windows .exe"
+        type: boolean
+        default: true
+      web:
+        description: "Refresh the web app on GitHub Pages"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm --filter @framenote/core test
+      - run: pnpm --filter @framenote/ui test
+
+  web:
+    needs: test
+    # The github-pages environment only accepts deployments from the default branch.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.web)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Build web app
+        run: pnpm --filter @framenote/web build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: apps/web/dist }
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  desktop:
+    needs: test
+    if: github.ref_type == 'tag' || inputs.desktop
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            label: macos-apple-silicon
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            label: macos-intel
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            label: windows-x64
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: "${{ matrix.target }}" }
+      - uses: swatinem/rust-cache@v2
+        with: { workspaces: apps/desktop/src-tauri -> target }
+      - run: pnpm install --frozen-lockfile
+      - name: Bundle ExifTool
+        run: node scripts/fetch-exiftool.mjs --platform=${{ runner.os == 'Windows' && 'win32' || 'darwin' }}
+      - name: Rust tests
+        if: matrix.target != 'x86_64-apple-darwin'
+        working-directory: apps/desktop/src-tauri
+        run: cargo test
+      - name: Build installer
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          args: --target ${{ matrix.target }}
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          releaseName: "Frame Note ${{ github.ref_name }}"
+          releaseBody: |
+            Unsigned builds.
+
+            macOS: drag Frame Note to Applications, then run
+            `xattr -dr com.apple.quarantine "/Applications/Frame Note.app"`
+
+            Windows: if SmartScreen appears, click More info → Run anyway.
+          releaseDraft: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: framenote-${{ matrix.label }}
+          path: |
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+          if-no-files-found: error

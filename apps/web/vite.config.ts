@@ -2,7 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+const base = process.env.BASE_PATH ?? "/";
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -18,7 +21,8 @@ export default defineConfig({
         background_color: "#151515",
         display: "standalone",
         orientation: "any",
-        start_url: "/",
+        start_url: base,
+        scope: base,
         icons: [
           { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
@@ -28,7 +32,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        navigateFallback: "/index.html",
+        navigateFallback: `${base}index.html`,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),

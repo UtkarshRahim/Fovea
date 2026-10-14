@@ -12,6 +12,24 @@ a Windows PC, or in the browser on an Android phone, iPhone or iPad, with no ins
   captions, present with touch gestures, and export. Works offline after the first visit.
 - **Nothing leaves your device.** No accounts, uploads, analytics or AI services.
 
+## Install on a Mac
+
+The `.dmg` is not signed with an Apple Developer ID, so macOS blocks it the first time. Drag *Frame Note* to
+Applications, then run this once in Terminal:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Frame Note.app"
+```
+
+If macOS still says the app "is damaged and can't be opened", re-sign it locally and open it again:
+
+```bash
+codesign --force --deep --sign - "/Applications/Frame Note.app"
+xattr -dr com.apple.quarantine "/Applications/Frame Note.app"
+```
+
+Windows instructions are under [Opening the unsigned apps](#opening-the-unsigned-apps).
+
 ## What works today
 
 | | Desktop | Phone / browser |
@@ -88,21 +106,41 @@ pnpm build:desktop
 # Windows→ apps/desktop/src-tauri/target/release/bundle/nsis/Frame Note_0.1.0_x64-setup.exe
 ```
 
-Or push a tag such as `v0.1.0` to GitHub. `.github/workflows/release.yml` then builds the Apple Silicon and Intel
-`.dmg` and the Windows `.exe` and attaches them to a draft release.
+## GitHub Actions: installers and web app
+
+`.github/workflows/build.yml` ("Build and deploy") does both jobs on GitHub's Mac and Windows machines, so you don't
+need a Windows PC to make the `.exe`.
+
+| Trigger | Tests | Web app (GitHub Pages) | `.dmg` + `.exe` |
+|---|---|---|---|
+| Push to `main` | ✓ | refreshed | — |
+| Push a tag `v*` (e.g. `v0.1.0`) | ✓ | — | built and attached to a **draft release** |
+| Actions → Build and deploy → **Run workflow** | ✓ | if "web" is ticked | if "desktop" is ticked, as downloadable artifacts |
+
+Producing installers:
+
+- **From the Actions tab:** open the finished run and download `framenote-macos-apple-silicon`,
+  `framenote-macos-intel` or `framenote-windows-x64` under *Artifacts*.
+- **As a release:**
+
+  ```bash
+  git tag v0.1.0 && git push origin v0.1.0
+  ```
+
+  Then open *Releases*, check the draft, and publish it. Bump the version in
+  `apps/desktop/src-tauri/tauri.conf.json` first so the file names match.
+
+Setting up the web app once: in the repository go to **Settings → Pages → Build and deployment → Source** and pick
+**GitHub Actions**. After the next push to `main` the app is live at `https://<user>.github.io/<repo>/` (for this
+repo, `https://utkarshrahim.github.io/FrameNote/`). Installed PWAs pick up the new version the next time they're opened.
+The build sets `BASE_PATH=/<repo>/`; a local `pnpm build:web` still builds for `/`.
 
 ### Opening the unsigned apps
 
 The builds are not signed with an Apple Developer ID or a Windows code-signing certificate.
 
-**macOS.** Drag *Frame Note* to Applications, then run once in Terminal:
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/Frame Note.app"
-```
-
-After that it opens normally. Alternatively: right-click the app → Open → Open, or System Settings → Privacy &
-Security → "Open Anyway".
+**macOS.** Use the Terminal command in [Install on a Mac](#install-on-a-mac). Or, without Terminal, right-click the app
+→ Open → Open, or go to System Settings → Privacy & Security → "Open Anyway".
 
 **Windows.** Run `Frame Note_x.y.z_x64-setup.exe`. If SmartScreen shows "Windows protected your PC", click **More
 info → Run anyway**. It installs for the current user without admin rights.
