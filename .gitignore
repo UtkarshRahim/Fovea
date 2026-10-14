@@ -4,3 +4,7 @@ target/
 .DS_Store
 uploads/
 terminals/
+coverage/
+apps/desktop/src-tauri/resources/exiftool/
+apps/desktop/src-tauri/gen/
+*.tsbuildinfo

@@ -1,0 +1,18 @@
+{
+  "name": "framenote",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "dev:web": "pnpm --filter @framenote/web dev",
+    "dev:desktop": "pnpm --filter @framenote/desktop tauri dev",
+    "build:web": "pnpm --filter @framenote/web build",
+    "build:desktop": "pnpm --filter @framenote/desktop tauri build",
+    "fetch:exiftool": "node scripts/fetch-exiftool.mjs",
+    "schema": "pnpm --filter @framenote/core schema",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}
