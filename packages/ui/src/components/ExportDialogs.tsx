@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { exportFilename, exportSize, type ImageEntry, type ImageExportOptions, type Manifest } from "@framenote/core";
 import { usePlatform } from "../platform";
-import { acquireAssetUrl, releaseAssetRef } from "../hooks/useAssetUrl";
 import { renderExport } from "../lib/draw";
 import { Button, Checkbox, Dialog, Segmented, Slider } from "./primitives";
 
@@ -41,7 +40,9 @@ export function ExportImageDialog({
     setError(undefined);
     const opts: ImageExportOptions = { format, quality, longEdge, includeOverlay };
     try {
-      const url = await acquireAssetUrl(platform, manifest.assignmentId, image.asset);
+      // A blob: URL is same-origin; drawing the desktop asset-protocol URL would taint the canvas and block toBlob().
+      const bytes = await platform.readAsset(manifest.assignmentId, image.asset);
+      const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: "image/jpeg" }));
       try {
         const out = await renderExport(url, image, manifest.presentation.overlay, opts, platform.maxCanvasPixels);
         const saved = await platform.saveExportedImage(out.blob, exportFilename(image.originalFilename, format));
@@ -50,7 +51,7 @@ export function ExportImageDialog({
           onOpenChange(false);
         }
       } finally {
-        releaseAssetRef(platform, manifest.assignmentId, image.asset);
+        URL.revokeObjectURL(url);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
