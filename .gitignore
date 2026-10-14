@@ -5,6 +5,7 @@ target/
 uploads/
 terminals/
 coverage/
-apps/desktop/src-tauri/resources/exiftool/
-apps/desktop/src-tauri/gen/
+apps/desktop/src-tauri/resources/exiftool/*
+!apps/desktop/src-tauri/resources/exiftool/README.md
+apps/desktop/src-tauri/gen/schemas/
 *.tsbuildinfo

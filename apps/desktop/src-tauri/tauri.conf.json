@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Frame Note",
+  "version": "0.1.0",
+  "identifier": "com.utkarshrahim.framenote",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:43219",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "title": "Frame Note",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 900,
+        "minHeight": 600,
+        "backgroundColor": "#151515",
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost blob: data:; connect-src 'self' ipc: http://ipc.localhost asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self'",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/assignments/**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "nsis"],
+    "category": "Photography",
+    "shortDescription": "Present and review wildlife photographs",
+    "longDescription": "Frame Note opens camera RAW and JPEG files, shows their original camera data, lets you caption and present them fullscreen, and packages assignments into portable .framenote files.",
+    "copyright": "© 2026 Utkarsh Rahim. MIT License.",
+    "license": "MIT",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "resources": { "resources/exiftool/": "exiftool/" },
+    "fileAssociations": [
+      {
+        "ext": ["framenote"],
+        "name": "Frame Note assignment",
+        "description": "Frame Note assignment",
+        "role": "Editor",
+        "mimeType": "application/x-framenote"
+      }
+    ],
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "nsis": { "installMode": "currentUser" }
+    }
+  }
+}

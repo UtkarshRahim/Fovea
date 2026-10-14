@@ -1,0 +1,30 @@
+{
+  "name": "@framenote/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 43219 --strictPort",
+    "build": "tsc -p tsconfig.json && vite build",
+    "tauri": "tauri",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "cd src-tauri && cargo test"
+  },
+  "dependencies": {
+    "@framenote/core": "workspace:*",
+    "@framenote/ui": "workspace:*",
+    "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-dialog": "^2.8.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7"
+  }
+}

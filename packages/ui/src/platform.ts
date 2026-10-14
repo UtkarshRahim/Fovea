@@ -16,6 +16,8 @@ export interface AddImagesResult {
   entries: ImageEntry[];
   failures: FileFailure[];
   cancelled: boolean;
+  /** Non-fatal problems, e.g. metadata could not be read but the image was added. */
+  warnings?: string[];
 }
 
 export interface SavedFile {

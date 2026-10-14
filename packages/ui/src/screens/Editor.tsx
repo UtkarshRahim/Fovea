@@ -93,6 +93,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
         setSelectedId((cur) => cur ?? res.entries[0]?.id);
       }
       setFailures(res.failures);
+      for (const w of new Set(res.warnings ?? [])) toast(w, "error");
       const parts = [`Added ${res.entries.length} ${res.entries.length === 1 ? "image" : "images"}`];
       if (res.failures.length) parts.push(`${res.failures.length} could not be read`);
       if (res.cancelled) parts.push("import cancelled");
