@@ -76,6 +76,21 @@ describe("editor", () => {
     expect(screen.getByRole("button", { name: /Image 2:/ })).toHaveAttribute("aria-current", "true");
   });
 
+  it("switches camera data to vertical with V, but not while typing", async () => {
+    const manifest = sampleManifest(2);
+    const { platform, store } = fakePlatform([manifest]);
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    const caption = await screen.findByRole("textbox", { name: "Caption" });
+    await user.click(caption);
+    await user.keyboard("v");
+    await user.click(document.body);
+    await user.keyboard("v");
+    await waitFor(() => expect(store.get(manifest.assignmentId)!.presentation.overlay.direction).toBe("vertical"), { timeout: 2000 });
+    expect(store.get(manifest.assignmentId)!.images.find((i) => i.order === 0)!.user.caption).toBe("v");
+  });
+
   it("reorders images with the keyboard-accessible move buttons", async () => {
     const manifest = sampleManifest(3);
     const { platform, store } = fakePlatform([manifest]);

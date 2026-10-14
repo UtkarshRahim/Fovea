@@ -149,6 +149,14 @@
             "labelledGrid": {
               "default": true,
               "type": "boolean"
+            },
+            "direction": {
+              "default": "horizontal",
+              "type": "string",
+              "enum": [
+                "horizontal",
+                "vertical"
+              ]
             }
           }
         }

@@ -32,7 +32,7 @@ The JSON Schema is in [`framenote.schema.json`](framenote.schema.json). It is ge
       "visible": true, "placement": "bottom", "theme": "dark",
       "fontSize": 16, "paddingX": 40, "paddingY": 22, "backgroundOpacity": 0.85,
       "fields": ["focalLength", "aperture", "shutterSpeed", "iso"],
-      "showCaption": true, "showTitle": true, "labelledGrid": true
+      "showCaption": true, "showTitle": true, "labelledGrid": true, "direction": "horizontal"
     }
   },
   "images": [
@@ -69,6 +69,9 @@ The JSON Schema is in [`framenote.schema.json`](framenote.schema.json). It is ge
 - `orientation` is `1` because stored assets are already upright. The source value is kept in
   `rawMetadata.sourceOrientation`.
 - `gps` appears only if the source had it and the exporter chose to include it. GPS is stripped by default.
+- `presentation.overlay.direction` is `horizontal` (camera data side by side, wrapping into rows) or `vertical` (one
+  field per line). It was added after version 1 shipped; a missing value means `horizontal`, and older readers
+  ignore it.
 - `comments` can be written by anyone using the app. `author` is optional free text, not an identity.
 - `"type": "video"` is reserved (`duration`, `codec`, `frameRate`, `poster`). Version-1 readers reject it with a
   clear message.

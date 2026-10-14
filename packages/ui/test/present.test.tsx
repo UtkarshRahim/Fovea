@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlatformProvider } from "../src/platform";
@@ -86,6 +86,19 @@ describe("presentation", () => {
     expect(screen.queryByRole("dialog", { name: "Show on photo" })).not.toBeInTheDocument();
   });
 
+  it("switches camera data between horizontal and vertical with V and in the panel", async () => {
+    const { manifest, store } = setup();
+    const user = userEvent.setup();
+    const saved = () => store.get(manifest.assignmentId)!.presentation.overlay.direction;
+    await user.keyboard("v");
+    await waitFor(() => expect(saved()).toBe("vertical"), { timeout: 2000 });
+    await user.keyboard("v");
+    await waitFor(() => expect(saved()).toBe("horizontal"), { timeout: 2000 });
+    await user.keyboard("i");
+    await user.click(screen.getByRole("radio", { name: "Vertical" }));
+    await waitFor(() => expect(saved()).toBe("vertical"), { timeout: 2000 });
+  });
+
   it("does not fire shortcuts while a text field has focus", async () => {
     setup();
     const user = userEvent.setup();
@@ -97,6 +110,40 @@ describe("presentation", () => {
     expect(screen.queryByRole("dialog", { name: "Show on photo" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Hide overlay/ })).toBeInTheDocument();
     input.remove();
+  });
+
+  it("shows only the photo in fullscreen while shortcuts keep working", async () => {
+    localStorage.removeItem("framenote.presentHintSeen");
+    const { platform } = setup();
+    let fs = false;
+    platform.setFullscreen = vi.fn(async (on: boolean) => {
+      fs = on;
+    });
+    platform.isFullscreen = vi.fn(async () => fs);
+    const region = () => screen.getByRole("region", { name: /Presentation/ });
+    expect(screen.getByText(/swipe to move/)).toBeInTheDocument();
+    expect(region()).toHaveClass("controls-on");
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: "f" });
+    });
+    await waitFor(() => expect(region()).toHaveClass("is-fullscreen"));
+    expect(region()).toHaveClass("controls-off");
+    expect(screen.queryByText(/swipe to move/)).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: "ArrowRight" });
+      fireEvent.keyDown(window, { key: "o" });
+    });
+    expect(counter()).toBe("2 / 3");
+    expect(screen.getByRole("button", { name: /Show overlay/ })).toHaveAttribute("aria-pressed", "false");
+    expect(region()).toHaveClass("controls-off");
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: "f" });
+    });
+    await waitFor(() => expect(region()).not.toHaveClass("is-fullscreen"));
+    expect(region()).toHaveClass("controls-on");
   });
 
   it("requests fullscreen with F", async () => {

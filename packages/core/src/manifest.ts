@@ -35,6 +35,8 @@ export const OverlaySettingsSchema = z.object({
   showCaption: z.boolean().default(true),
   showTitle: z.boolean().default(true),
   labelledGrid: z.boolean().default(true),
+  /** Camera data side by side in rows, or one field per line in a column. */
+  direction: z.enum(["horizontal", "vertical"]).default("horizontal"),
 });
 export type OverlaySettings = z.infer<typeof OverlaySettingsSchema>;
 

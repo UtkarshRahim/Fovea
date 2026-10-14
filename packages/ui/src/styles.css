@@ -843,10 +843,17 @@ select {
   border-color: var(--accent);
 }
 
+/* The controls get their own strip under the photo so they never cover the overlay. */
+.editor-center {
+  --stage-controls-strip: 52px;
+}
+.editor-center > .stage {
+  bottom: var(--stage-controls-strip);
+}
 .stage-controls {
   position: absolute;
   left: 50%;
-  bottom: var(--space-3);
+  bottom: 8px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -1189,6 +1196,10 @@ select {
 }
 .present.controls-off {
   cursor: none;
+}
+/* Fullscreen shows only the photo and its overlay; the counter stays for screen readers. */
+.present.is-fullscreen.controls-off .present-counter {
+  opacity: 0;
 }
 .present-stage {
   position: absolute;

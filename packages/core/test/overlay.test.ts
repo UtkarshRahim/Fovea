@@ -58,6 +58,38 @@ describe("overlay layout", () => {
     expect(l.runs.map((r) => r.text)).toEqual(["600 mm  ·  f/5.6  ·  1/1600 s  ·  ISO 800"]);
   });
 
+  it("defaults to horizontal camera data", () => {
+    expect(settings.direction).toBe("horizontal");
+  });
+
+  it("stacks camera data one field per line when vertical", () => {
+    const l = layoutOverlay(1920, 1280, { ...settings, direction: "vertical", showTitle: false, showCaption: false }, { values }, measure);
+    expect(l.runs.map((r) => r.text)).toEqual(["FOCAL LENGTH", "600 mm", "APERTURE", "f/5.6", "SHUTTER", "1/1600 s", "ISO", "ISO 800"]);
+    const labels = l.runs.filter((_, i) => i % 2 === 0);
+    const valueRuns = l.runs.filter((_, i) => i % 2 === 1);
+    expect(new Set(labels.map((r) => r.x)).size).toBe(1);
+    expect(new Set(valueRuns.map((r) => r.x)).size).toBe(1);
+    expect(valueRuns[0]!.x).toBeGreaterThan(labels[0]!.x);
+    labels.forEach((r, i) => expect(r.y).toBe(valueRuns[i]!.y));
+    const ys = valueRuns.map((r) => r.y);
+    expect([...ys].sort((a, b) => a - b)).toEqual(ys);
+    expect(new Set(ys).size).toBe(values.length);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(1280 - settings.paddingY);
+  });
+
+  it("lists values without labels when vertical and the grid is off", () => {
+    const l = layoutOverlay(1920, 1280, { ...settings, direction: "vertical", labelledGrid: false, showTitle: false, showCaption: false }, { values }, measure);
+    expect(l.runs.map((r) => r.text)).toEqual(["600 mm", "f/5.6", "1/1600 s", "ISO 800"]);
+    expect(new Set(l.runs.map((r) => r.x))).toEqual(new Set([settings.paddingX]));
+  });
+
+  it("keeps vertical values inside narrow images", () => {
+    const lens = overlayValues(["lens"], { lens: { model: "NIKKOR Z 600mm f/4 TC VR S with a very long description" } });
+    const l = layoutOverlay(300, 900, { ...settings, direction: "vertical" }, { values: lens }, measure, 0.5);
+    for (const r of l.runs) expect(r.x + measure(r.text, r.font)).toBeLessThanOrEqual(300 + 1);
+    expect(l.runs.at(-1)!.text.endsWith("…")).toBe(true);
+  });
+
   it("wraps grid cells on narrow images", () => {
     const l = layoutOverlay(200, 700, settings, { values }, measure, 0.5);
     const valueRuns = l.runs.filter((r) => r.font.size > 9);

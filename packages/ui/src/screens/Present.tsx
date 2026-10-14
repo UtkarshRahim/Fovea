@@ -7,7 +7,7 @@ import { acquireAssetUrl, releaseAssetRef } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
 import { hasModifier, isTypingTarget } from "../lib/keys";
 import { PhotoStage, zoomLabel, type PhotoStageHandle, type ZoomInfo } from "../components/PhotoStage";
-import { FieldPicker } from "../components/FieldPicker";
+import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { Button, IconButton } from "../components/primitives";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { describeError } from "./Library";
@@ -68,18 +68,37 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     [aid, count, mode],
   );
 
-  const poke = useCallback(() => {
+  const fullscreenRef = useRef(false);
+  const lastPointer = useRef<string>("mouse");
+
+  const reveal = useCallback(() => {
     setControls(true);
     if (idle.current) clearTimeout(idle.current);
     idle.current = setTimeout(() => setControls(false), IDLE_MS);
   }, []);
 
+  /** In fullscreen only the photo and its overlay show; mouse moves and key presses don't bring the controls back. */
+  const poke = useCallback(() => {
+    if (fullscreenRef.current) return;
+    reveal();
+  }, [reveal]);
+
   useEffect(() => {
-    poke();
+    fullscreenRef.current = fullscreen;
+    if (fullscreen) {
+      if (idle.current) clearTimeout(idle.current);
+      setControls(false);
+      setHint(false);
+    } else {
+      reveal();
+    }
+  }, [fullscreen, reveal]);
+
+  useEffect(() => {
     return () => {
       if (idle.current) clearTimeout(idle.current);
     };
-  }, [poke]);
+  }, []);
 
   useEffect(() => {
     if (!hint) return;
@@ -159,6 +178,11 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         case "I":
           setPicker((v) => !v);
           break;
+        case "v":
+        case "V":
+          update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
+          setOverlayOn(true);
+          break;
         case "+":
         case "=":
           stage.current?.zoomBy(1.5);
@@ -187,14 +211,16 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts]);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts, update]);
 
   const toggleControls = useCallback(() => {
+    // A touch screen has no keyboard, so a tap is the only way back to the controls in fullscreen.
+    if (fullscreenRef.current && lastPointer.current !== "touch") return;
     setControls((c) => {
-      if (!c) poke();
+      if (!c) reveal();
       return !c;
     });
-  }, [poke]);
+  }, [reveal]);
   const swipe = useCallback((d: 1 | -1) => go(i + d), [go, i]);
 
   if (!image) {
@@ -208,7 +234,8 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
 
   return (
     <div
-      className={`present ${controls ? "controls-on" : "controls-off"}`}
+      className={`present ${controls ? "controls-on" : "controls-off"} ${fullscreen ? "is-fullscreen" : ""}`}
+      onPointerDownCapture={(e) => (lastPointer.current = e.pointerType)}
       onPointerMove={(e) => e.pointerType === "mouse" && poke()}
       role="region"
       aria-label={`Presentation, image ${i + 1} of ${count}`}
@@ -229,7 +256,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
       <div className="present-counter mono" aria-live="polite">
         {i + 1} / {count}
       </div>
-      {zoom.scale > 1.01 ? (
+      {zoom.scale > 1.01 && !fullscreen ? (
         <button type="button" className="present-zoom mono on-photo" onClick={() => stage.current?.resetZoom()} title="Fit to screen (0)">
           {zoomLabel(zoom)}
         </button>
@@ -261,7 +288,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         </IconButton>
       </div>
 
-      {hint ? (
+      {hint && !fullscreen ? (
         <p className="present-hint small">
           {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · pinch, double-tap or + − to zoom · ? all shortcuts · Esc to leave
         </p>

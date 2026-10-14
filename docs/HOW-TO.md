@@ -123,8 +123,9 @@ Click **Show on photo** (or press `I`) to choose what's drawn on the photograph.
   compensation and capture date.
 - **Text:** turn the whole overlay on or off, the *Species · Location* line, the caption, and whether each value has
   a small label above it ("Labelled grid").
-- **Layout:** top or bottom, a dark or light treatment, the whole photo or fill the screen, font size, padding and
-  background.
+- **Layout:** camera data **horizontal** (side by side) or **vertical** (one field per line, which suits portrait
+  photos), top or bottom, a dark or light treatment, the whole photo or fill the screen, font size, padding and
+  background. Press `V` to switch between horizontal and vertical without opening the panel.
 
 These settings belong to the project, so they apply to every photograph in it. They also travel with the project
 when you share it.
@@ -137,13 +138,15 @@ Click **Present** (or press `P`). The slideshow starts at the photograph you had
 
 - **Next and previous:** `←` `→`, the arrows at the sides, or swipe. `Home` and `End` jump to the first and last
   photograph.
-- **Overlay:** `O` turns it on and off. `I` opens the same **Show on photo** panel as above.
-- **Fullscreen:** `F`, or the button in the top-right corner.
+- **Overlay:** `O` turns it on and off. `V` switches the camera data between horizontal and vertical. `I` opens the
+  same **Show on photo** panel as above.
+- **Fullscreen:** `F`, or the button in the top-right corner. In fullscreen only the photograph and its overlay are
+  shown: no buttons, counter or hints. Every key still works, and on a touch screen a tap brings the controls back.
 - **Zoom:** works the same as in view mode.
 - **Leave:** `Esc` first zooms back to fit, then leaves the presentation. You can also click the ✕ in the top-left
   corner.
 
-The controls fade away when you stop moving the mouse. Move it, or tap the screen, to bring them back.
+Outside fullscreen, the controls fade away when you stop moving the mouse. Move it, or tap the screen, to bring them back.
 
 ![The Kabini leopard with the overlay: species, location, camera data and caption](how-to/11-present-overlay.jpg)
 
@@ -223,6 +226,7 @@ Press `?`, or click the keyboard button in the top bar, to see every shortcut. O
 | `+` `−` `0` | Zoom in / out / fit | Zoom in / out / fit |
 | `R` | Review mode on / off | |
 | `I` | Show on photo | Show on photo |
+| `V` | Camera data horizontal / vertical | Camera data horizontal / vertical |
 | `P` | Present | |
 | `O` | | Overlay on / off |
 | `F` | | Fullscreen on / off |

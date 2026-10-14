@@ -81,6 +81,13 @@ function wrap(text: string, font: FontSpec, maxWidth: number, measure: MeasureTe
   return lines;
 }
 
+function truncate(text: string, font: FontSpec, maxWidth: number, measure: MeasureText): string {
+  if (measure(text, font) <= maxWidth) return text;
+  let t = text;
+  while (t.length > 1 && measure(`${t}…`, font) > maxWidth) t = t.slice(0, -1).trimEnd();
+  return `${t}…`;
+}
+
 const lineHeight = (f: FontSpec) => f.size * 1.3;
 const ascent = (f: FontSpec) => f.size * 0.95;
 
@@ -122,7 +129,25 @@ export function layoutOverlay(
     });
   }
 
-  if (content.values.length && settings.labelledGrid) {
+  if (content.values.length && settings.direction === "vertical") {
+    const labelled = settings.labelledGrid;
+    const rowFont: FontSpec = labelled ? { ...valueFont, size: fs * 1.1 } : compactFont;
+    const labels = content.values.map((v) => v.label.toUpperCase());
+    const labelW = labelled ? Math.max(...labels.map((l) => measure(l, labelFont) + l.length * labelFont.tracking)) : 0;
+    const valueX = padX + (labelled ? labelW + fs * 1.2 : 0);
+    const valueMax = Math.max(1, width - padX - valueX);
+    const rowH = lineHeight(rowFont);
+    const rowGap = fs * 0.2;
+    blocks.push({
+      height: content.values.length * rowH + (content.values.length - 1) * rowGap,
+      place: (top) =>
+        content.values.flatMap((v, i) => {
+          const y = top + i * (rowH + rowGap) + ascent(rowFont);
+          const value: TextRun = { text: truncate(v.value, rowFont, valueMax, measure), x: valueX, y, font: rowFont, color: theme.text };
+          return labelled ? [{ text: labels[i]!, x: padX, y, font: labelFont, color: theme.muted }, value] : [value];
+        }),
+    });
+  } else if (content.values.length && settings.labelledGrid) {
     const colGap = fs * 2.2;
     const minCol = fs * 5.5;
     type Cell = { label: string; value: string; w: number };

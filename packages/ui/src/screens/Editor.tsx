@@ -20,7 +20,7 @@ import { PhotoStage, type PhotoStageHandle, type ZoomInfo } from "../components/
 import { StageControls } from "../components/StageControls";
 import { ProjectSwitcher } from "../components/ProjectSwitcher";
 import { CameraSection, CommentsSection, NotesSection } from "../components/InfoPanel";
-import { FieldPicker } from "../components/FieldPicker";
+import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { ExportBundleDialog, ExportImageDialog } from "../components/ExportDialogs";
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
@@ -161,6 +161,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") goTo(selectedIndex - 1);
       else if (key === "r") setReview((v) => !v);
       else if (key === "i") setPicker(true);
+      else if (key === "v") update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
       else if (key === "p" && images.length) void present();
       else if (e.key === "+" || e.key === "=") stage.current?.zoomBy(1.5);
       else if (e.key === "-" || e.key === "_") stage.current?.zoomBy(1 / 1.5);
@@ -171,7 +172,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo, images.length, selectedIndex, picker, shortcuts, present]);
+  }, [goTo, images.length, selectedIndex, picker, shortcuts, present, update]);
 
   const addButtons = (
     <>

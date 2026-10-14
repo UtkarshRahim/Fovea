@@ -11,6 +11,10 @@ const FIELD_NAMES: Record<OverlayField, string> = {
   capturedAt: "Capture date",
 };
 
+export function toggleDirection(p: Presentation): Presentation {
+  return { ...p, overlay: { ...p.overlay, direction: p.overlay.direction === "vertical" ? "horizontal" : "vertical" } };
+}
+
 /** Non-modal panel so the photo stays visible while settings change. Bottom sheet on phones. */
 export function FieldPicker({
   presentation,
@@ -66,6 +70,15 @@ export function FieldPicker({
         </fieldset>
         <fieldset>
           <legend>Layout</legend>
+          <Segmented
+            label="Camera data (V)"
+            value={o.direction}
+            options={[
+              { value: "horizontal", label: "Horizontal" },
+              { value: "vertical", label: "Vertical" },
+            ]}
+            onChange={(direction) => set({ direction })}
+          />
           <Segmented
             label="Placement"
             value={o.placement}
