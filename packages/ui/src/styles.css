@@ -1279,3 +1279,56 @@ select {
     transition: none !important;
   }
 }
+
+/* Keyboard shortcuts */
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+  max-height: min(70dvh, 640px);
+  overflow-y: auto;
+}
+.shortcuts section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.shortcut-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.shortcut-list div {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.shortcut-list dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.shortcut-list dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+kbd {
+  font: 500 12px var(--mono);
+  min-width: 24px;
+  padding: 1px 6px;
+  text-align: center;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--text);
+  white-space: nowrap;
+}
+@media (hover: none) and (pointer: coarse) {
+  .shortcuts-btn {
+    display: none;
+  }
+}

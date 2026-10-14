@@ -133,4 +133,24 @@ describe("editor", () => {
     await waitFor(() => expect(location.hash).toBe(`#/a/${b.assignmentId}`));
     expect(await screen.findByRole("button", { name: /Project: Kabini Dusk/ })).toBeInTheDocument();
   });
+
+  it("lists keyboard shortcuts with ? or the button, and blocks other keys while open", async () => {
+    localStorage.setItem("framenote.reviewMode", "0");
+    const manifest = sampleManifest(3);
+    const { platform } = fakePlatform([manifest]);
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    await screen.findByTestId("photo-stage");
+    await user.keyboard("?");
+    const dialog = await screen.findByRole("dialog", { name: "Keyboard shortcuts" });
+    expect(dialog).toHaveTextContent("Review mode on / off");
+    expect(dialog).toHaveTextContent("Fullscreen on / off");
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByText("1 / 3")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Keyboard shortcuts (?)" }));
+    expect(await screen.findByRole("dialog", { name: "Keyboard shortcuts" })).toBeInTheDocument();
+  });
 });

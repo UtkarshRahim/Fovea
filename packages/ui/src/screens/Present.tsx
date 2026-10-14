@@ -9,6 +9,7 @@ import { hasModifier, isTypingTarget } from "../lib/keys";
 import { PhotoStage, zoomLabel, type PhotoStageHandle, type ZoomInfo } from "../components/PhotoStage";
 import { FieldPicker } from "../components/FieldPicker";
 import { Button, IconButton } from "../components/primitives";
+import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { describeError } from "./Library";
 
 const HINT_KEY = "framenote.presentHintSeen";
@@ -51,6 +52,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
   const [controls, setControls] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const [hint, setHint] = useState(() => !localStorage.getItem(HINT_KEY));
+  const [shortcuts, setShortcuts] = useState(false);
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
   const stage = useRef<PhotoStageHandle>(null);
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,7 +133,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTypingTarget(e.target) || hasModifier(e)) return;
+      if (isTypingTarget(e.target) || hasModifier(e) || shortcuts) return;
       switch (e.key) {
         case "ArrowLeft":
           go(i - 1);
@@ -168,6 +170,9 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         case "0":
           stage.current?.resetZoom();
           break;
+        case "?":
+          setShortcuts(true);
+          break;
         case "Escape":
           if (picker) setPicker(false);
           else if (zoom.scale > 1.01) stage.current?.resetZoom();
@@ -182,7 +187,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale]);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts]);
 
   const toggleControls = useCallback(() => {
     setControls((c) => {
@@ -242,6 +247,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
             <IconButton label="Show on photo (I)" onClick={() => setPicker((v) => !v)} className="on-photo" aria-pressed={picker}>
               <SlidersHorizontal size={18} />
             </IconButton>
+            <ShortcutsButton onClick={() => setShortcuts(true)} className="on-photo" />
             <IconButton label={fullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"} onClick={() => void toggleFullscreen()} className="on-photo">
               {fullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
             </IconButton>
@@ -257,10 +263,11 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
 
       {hint ? (
         <p className="present-hint small">
-          {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · pinch, double-tap or + − to zoom · O overlay · I fields · F fullscreen · Esc to leave
+          {mode === "preview" ? "Preview mode. " : ""}← → or swipe to move · pinch, double-tap or + − to zoom · ? all shortcuts · Esc to leave
         </p>
       ) : null}
 
+      <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
       {picker ? (
         <FieldPicker
           presentation={manifest.presentation}

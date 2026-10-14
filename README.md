@@ -55,7 +55,7 @@ sync (sync is by hand with `.framenote` files; see `docs/SYNC.md`).
 
 **View and review.** A project opens in view mode: the photo, a thumbnail strip and a small control bar. Notes,
 comments, camera data, reordering and export live behind the **Review** button (or `R`); the app remembers which mode
-you used last. Zooming goes up to twice the stored preview's actual pixels. Imported photos are stored at up to
+you used last. Press `?` (or the keyboard button in the top bar) for every keyboard shortcut. Zooming goes up to twice the stored preview's actual pixels. Imported photos are stored at up to
 4096 px on the long edge, so 100% is 100% of that preview, not of the original RAW.
 
 RAW files are shown from the camera's embedded JPEG preview. On the tested cameras that preview is full resolution,

@@ -8,6 +8,8 @@ import { useAssetUrl } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
 import { Button, ConfirmDialog, Dialog } from "../components/primitives";
 import { useToast } from "../components/Toasts";
+import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
+import { isTypingTarget } from "../lib/keys";
 
 export function describeError(e: unknown): string {
   if (e instanceof FramenoteError) return e.details?.length ? `${e.message} (${e.details.slice(0, 3).join("; ")})` : e.message;
@@ -33,6 +35,15 @@ export function Library() {
   const [deleting, setDeleting] = useState<AssignmentSummary | null>(null);
   const [importing, setImporting] = useState(false);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
+  const [shortcuts, setShortcuts] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "?" && !isTypingTarget(e.target)) setShortcuts(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -85,6 +96,7 @@ export function Library() {
           <h1>Frame Note</h1>
         </div>
         <div className="topbar-actions">
+          <ShortcutsButton onClick={() => setShortcuts(true)} />
           {importButton}
           <Button variant="primary" onClick={() => setCreating(true)}>
             <Plus size={16} /> New project
@@ -138,6 +150,7 @@ export function Library() {
         </footer>
       </main>
 
+      <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
       <TitleDialog
         open={creating}
         onOpenChange={setCreating}

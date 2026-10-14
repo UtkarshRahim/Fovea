@@ -23,6 +23,7 @@ import { CameraSection, CommentsSection, NotesSection } from "../components/Info
 import { FieldPicker } from "../components/FieldPicker";
 import { ExportBundleDialog, ExportImageDialog } from "../components/ExportDialogs";
 import { useToast } from "../components/Toasts";
+import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { describeError, TitleDialog } from "./Library";
 
 export function Editor({ id, imageId }: { id: string; imageId?: string }) {
@@ -81,6 +82,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
   const [exportImage, setExportImage] = useState(false);
   const [exportBundle, setExportBundle] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const [shortcuts, setShortcuts] = useState(false);
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [failures, setFailures] = useState<AddImagesResult["failures"]>([]);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -153,7 +155,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTypingTarget(e.target) || hasModifier(e) || picker) return;
+      if (isTypingTarget(e.target) || hasModifier(e) || picker || shortcuts) return;
       const key = e.key.toLowerCase();
       if (e.key === "ArrowDown" || e.key === "ArrowRight") goTo(selectedIndex + 1);
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") goTo(selectedIndex - 1);
@@ -163,12 +165,13 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       else if (e.key === "+" || e.key === "=") stage.current?.zoomBy(1.5);
       else if (e.key === "-" || e.key === "_") stage.current?.zoomBy(1 / 1.5);
       else if (e.key === "0") stage.current?.resetZoom();
+      else if (e.key === "?") setShortcuts(true);
       else return;
       e.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo, images.length, selectedIndex, picker, present]);
+  }, [goTo, images.length, selectedIndex, picker, shortcuts, present]);
 
   const addButtons = (
     <>
@@ -216,6 +219,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
             <MessageSquareText size={16} /> Review
             {commentCount ? <span className="count-badge mono">{commentCount}</span> : null}
           </Button>
+          <ShortcutsButton onClick={() => setShortcuts(true)} />
           <Button variant="primary" disabled={!images.length} onClick={() => void present()} title="Present fullscreen (P)">
             <MonitorPlay size={16} /> <span className="hide-xs">Present</span>
           </Button>
@@ -322,6 +326,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
 
       {selected ? <ExportImageDialog open={exportImage} onOpenChange={setExportImage} manifest={manifest} image={selected} onDone={(m) => toast(m)} /> : null}
       <ExportBundleDialog open={exportBundle} onOpenChange={setExportBundle} manifest={manifest} onDone={(m) => toast(m)} />
+      <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
       <TitleDialog
         open={renaming}
         onOpenChange={setRenaming}
