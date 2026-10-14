@@ -1,6 +1,6 @@
 # Phone ↔ Desktop Sync (proposal)
 
-Status: proposal, not implemented. Constraints come from `SPEC.md`: local-first, offline-first,
+Status: proposal, not implemented. For now sync is by hand: move `.framenote` files between devices (Tier 0 without patch files). Constraints come from `SPEC.md`: local-first, offline-first,
 no accounts, no cloud uploads, no telemetry, phone used through a browser (PWA) without
 installing a native app.
 
@@ -8,8 +8,8 @@ installing a native app.
 
 | | Desktop (Tauri) | Phone (PWA) |
 |---|---|---|
-| RAW / folder import, ExifTool, decoding | yes | no |
-| Produces presentation assets + thumbnails | yes | JPEG only |
+| Folder import, ExifTool metadata | yes | no |
+| Produces presentation assets + thumbnails | yes | yes (JPEG, and RAW via embedded preview) |
 | Edits captions, species, location, notes | yes | yes |
 | Reorders images, presentation settings | yes | yes |
 | Presents fullscreen | yes | yes |
@@ -48,9 +48,9 @@ device" notice the user can resolve.
 ## 3. Transports (ship in this order)
 
 ### Tier 0: file hand-off (already in spec, always works)
-Desktop exports `.fieldnote`. User sends it via AirDrop, Nearby Share, USB, email, or a cloud
+Desktop exports `.framenote`. User sends it via AirDrop, Nearby Share, USB, email, or a cloud
 drive. The phone imports it through the file picker.
-Going back: the phone exports a **notes patch** (`.fieldnote-patch`, a few KB containing only
+Going back: the phone exports a **notes patch** (`.framenote-patch`, a few KB containing only
 changed fields and clocks), not the full bundle. Desktop merges it with the rules above.
 This needs no network code at all and is the guaranteed fallback.
 
@@ -66,7 +66,7 @@ This needs no network code at all and is the guaranteed fallback.
 4. Pull: the phone fetches the manifest, then missing assets by hash, thumbnails first.
    Push: caption edits go to the desktop as patches. During a live session the phone can also act
    as a **remote control / second screen** for presentations.
-5. "Keep on this phone": the phone downloads the bundle as `.fieldnote` and imports it into the
+5. "Keep on this phone": the phone downloads the bundle as `.framenote` and imports it into the
    installed PWA, which runs on a secure origin and therefore has offline support and persistent
    storage.
 
@@ -82,7 +82,7 @@ Honest limitations:
   encryption using the key from the QR code.
 
 ### Tier 2: user-owned folder sync (optional)
-Desktop can mirror selected assignments as `.fieldnote` files plus patch files into a folder
+Desktop can mirror selected assignments as `.framenote` files plus patch files into a folder
 the user picks (iCloud Drive, Dropbox, OneDrive, Google Drive, Syncthing). The phone opens them
 from the Files app. Frame Notes never talks to those services. The OS client does the sync, so
 the no-accounts and no-cloud principles still hold.
@@ -102,7 +102,7 @@ GET  /api/assets/:sha256                  -> image bytes (immutable, cacheable)
 POST /api/assignments/:id/patch           <- {deviceId, baseClock, ops:[{path, value, clock}]}
                                           -> {merged manifest clocks, conflicts[]}
 ```
-The same `ops` structure is written into `.fieldnote-patch` files. The merge function lives in
+The same `ops` structure is written into `.framenote-patch` files. The merge function lives in
 `packages/core` and is unit tested once. Desktop, web, the LAN server and the patch importer all
 use it.
 
