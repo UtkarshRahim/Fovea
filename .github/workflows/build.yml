@@ -81,6 +81,11 @@ jobs:
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
             label: windows-x64
+            arch: x64
+          - platform: windows-latest
+            target: i686-pc-windows-msvc
+            label: windows-x86
+            arch: x86
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
@@ -93,9 +98,9 @@ jobs:
         with: { workspaces: apps/desktop/src-tauri -> target }
       - run: pnpm install --frozen-lockfile
       - name: Bundle ExifTool
-        run: node scripts/fetch-exiftool.mjs --platform=${{ runner.os == 'Windows' && 'win32' || 'darwin' }}
+        run: node scripts/fetch-exiftool.mjs --platform=${{ runner.os == 'Windows' && 'win32' || 'darwin' }} --arch=${{ matrix.arch || 'x64' }}
       - name: Rust tests
-        if: matrix.target != 'x86_64-apple-darwin'
+        if: matrix.target != 'x86_64-apple-darwin' && matrix.target != 'i686-pc-windows-msvc'
         working-directory: apps/desktop/src-tauri
         run: cargo test
       - name: Build installer

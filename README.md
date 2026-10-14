@@ -106,6 +106,15 @@ pnpm build:desktop
 # Windows→ apps/desktop/src-tauri/target/release/bundle/nsis/Frame Note_0.1.0_x64-setup.exe
 ```
 
+For 32-bit Windows, fetch the 32-bit ExifTool and build for the `i686` target:
+
+```bash
+rustup target add i686-pc-windows-msvc
+node scripts/fetch-exiftool.mjs --arch=x86
+pnpm build:desktop --target i686-pc-windows-msvc
+# → apps/desktop/src-tauri/target/i686-pc-windows-msvc/release/bundle/nsis/Frame Note_0.1.0_x86-setup.exe
+```
+
 ## GitHub Actions: installers and web app
 
 `.github/workflows/build.yml` ("Build and deploy") does both jobs on GitHub's Mac and Windows machines, so you don't
@@ -120,7 +129,7 @@ need a Windows PC to make the `.exe`.
 Producing installers:
 
 - **From the Actions tab:** open the finished run and download `framenote-macos-apple-silicon`,
-  `framenote-macos-intel` or `framenote-windows-x64` under *Artifacts*.
+  `framenote-macos-intel`, `framenote-windows-x64` or `framenote-windows-x86` (32-bit) under *Artifacts*.
 - **As a release:**
 
   ```bash
@@ -142,7 +151,7 @@ The builds are not signed with an Apple Developer ID or a Windows code-signing c
 **macOS.** Use the Terminal command in [Install on a Mac](#install-on-a-mac). Or, without Terminal, right-click the app
 → Open → Open, or go to System Settings → Privacy & Security → "Open Anyway".
 
-**Windows.** Run `Frame Note_x.y.z_x64-setup.exe`. If SmartScreen shows "Windows protected your PC", click **More
+**Windows.** Run `Frame Note_x.y.z_x64-setup.exe` (or `Frame Note_x.y.z_x86-setup.exe` on 32-bit Windows). If SmartScreen shows "Windows protected your PC", click **More
 info → Run anyway**. It installs for the current user without admin rights.
 
 ## Privacy

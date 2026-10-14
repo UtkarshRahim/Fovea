@@ -86,7 +86,8 @@ Short record of implementation choices and their trade-offs. Newest at the botto
 - **ExifTool bundling.** `scripts/fetch-exiftool.mjs` downloads the official release and verifies its published
   SHA-256. On macOS it ships the Perl distribution, run by the system `/usr/bin/perl`. If a future macOS removes
   Perl, the app falls back to a PATH ExifTool and otherwise imports images without metadata, with a warning. On
-  Windows it ships the standalone build (Perl included, ~35 MB).
+  Windows it ships the standalone build (Perl included, ~35 MB), 64-bit for the x64 installer and 32-bit for the
+  x86 installer.
 
 ## Overlay
 
