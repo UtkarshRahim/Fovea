@@ -112,7 +112,7 @@ export class DesktopPlatform implements Platform {
     await invoke("write_asset", data, { headers: { "x-assignment-id": enc(id), "x-asset-path": enc(path) } });
   }
 
-  async addImages(assignmentId: string, opts: { folder: boolean }, onProgress: (p: ImportProgress) => void): Promise<AddImagesResult | null> {
+  async addImages(assignmentId: string, opts: { folder: boolean; multiple?: boolean }, onProgress: (p: ImportProgress) => void): Promise<AddImagesResult | null> {
     let paths: string[];
     if (opts.folder) {
       const folder = await open({ directory: true, multiple: false, title: "Choose a folder of photographs" });
@@ -121,8 +121,8 @@ export class DesktopPlatform implements Platform {
       if (!paths.length) return { entries: [], failures: [{ file: folder, message: "No supported photographs in this folder." }], cancelled: false };
     } else {
       const picked = await open({
-        multiple: true,
-        title: "Add photographs",
+        multiple: opts.multiple ?? true,
+        title: opts.multiple === false ? "Choose the replacement photograph" : "Add photographs",
         filters: [{ name: "Photographs (RAW, JPEG, TIFF, PNG)", extensions: [...RAW_AND_IMAGES, ...RAW_AND_IMAGES.map((e) => e.toUpperCase())] }],
       });
       if (!picked) return null;

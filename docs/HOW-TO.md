@@ -113,6 +113,10 @@ exposure compensation, capture time and original size. If a file has no camera d
 filled in for you. Underneath is the original file name, and what the picture is shown from, for example "Original
 JPEG" or the RAW file's embedded preview.
 
+**Replace image…** under the file name swaps in a different file for this photo, for example a re-edited export.
+The picture and its camera data come from the new file. The caption, species, location, comments and the photo's
+place in the order stay as they are. Your original files are never changed.
+
 ## 7. Choose what shows on the photo
 
 Click **Show on photo** (or press `I`) to choose what's drawn on the photograph.

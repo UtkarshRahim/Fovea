@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Trash2 } from "lucide-react";
+import { Replace, Trash2 } from "lucide-react";
 import {
   formatAperture,
   formatCamera,
@@ -52,7 +52,7 @@ export function NotesSection({ image, onChange }: { image: ImageEntry; onChange:
   );
 }
 
-export function CameraSection({ image }: { image: ImageEntry }) {
+export function CameraSection({ image, onReplace, replacing }: { image: ImageEntry; onReplace?: () => void; replacing?: boolean }) {
   const e = image.exposure;
   const rows: [string, string | undefined][] = [
     ["Focal length", formatFocalLength(e?.focalLengthMm)],
@@ -89,6 +89,14 @@ export function CameraSection({ image }: { image: ImageEntry }) {
         <br />
         Shown from: {SOURCE_LABEL[image.assetSource]}
       </p>
+      {onReplace ? (
+        <div className="replace-row">
+          <Button size="sm" onClick={onReplace} disabled={replacing} title="Use a different file for this photo. Notes and comments stay.">
+            <Replace size={14} /> Replace image…
+          </Button>
+          <p className="muted small">Swaps in a new file and its camera data. Notes, comments and order stay as they are.</p>
+        </div>
+      ) : null}
     </section>
   );
 }

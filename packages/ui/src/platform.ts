@@ -54,7 +54,7 @@ export interface Platform {
   /** Picks files (or a folder) and turns them into stored presentation assets. Returns null if the user cancelled the picker. */
   addImages(
     assignmentId: string,
-    opts: { folder: boolean },
+    opts: { folder: boolean; multiple?: boolean },
     onProgress: (p: ImportProgress) => void,
   ): Promise<AddImagesResult | null>;
   /** Same as addImages but for files the user dropped onto the window. */

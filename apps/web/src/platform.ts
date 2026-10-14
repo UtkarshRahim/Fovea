@@ -170,8 +170,8 @@ export class WebPlatform implements Platform {
     return new Uint8Array(await blob.arrayBuffer());
   }
 
-  async addImages(assignmentId: string, _opts: { folder: boolean }, onProgress: (p: ImportProgress) => void) {
-    const files = await pickFiles(ACCEPT_IMAGES, true);
+  async addImages(assignmentId: string, opts: { folder: boolean; multiple?: boolean }, onProgress: (p: ImportProgress) => void) {
+    const files = await pickFiles(ACCEPT_IMAGES, opts.multiple ?? true);
     if (!files.length) return null;
     return this.addDroppedFiles(assignmentId, files, onProgress);
   }

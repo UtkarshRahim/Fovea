@@ -54,6 +54,17 @@ export function removeImage(m: Manifest, imageId: string, now = new Date()): Man
   return { ...m, images, modifiedAt: now.toISOString() };
 }
 
+/** Swaps in a newly processed image and its camera data, keeping the photo's id, place, notes and comments. */
+export function replaceImage(m: Manifest, imageId: string, replacement: ImageEntry, now = new Date()): Manifest {
+  return {
+    ...m,
+    modifiedAt: now.toISOString(),
+    images: m.images.map((img) =>
+      img.id === imageId ? { ...replacement, id: img.id, order: img.order, user: img.user, comments: img.comments } : img,
+    ),
+  };
+}
+
 export function updateUserNotes(m: Manifest, imageId: string, patch: Partial<UserNotes>, now = new Date()): Manifest {
   const ts = now.toISOString();
   return {

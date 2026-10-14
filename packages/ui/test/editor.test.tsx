@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { addComment, updateUserNotes } from "@framenote/core";
 import { App } from "../src/App";
 import { useAutosave } from "../src/hooks/useAutosave";
 import { fakePlatform, sampleManifest } from "./fakePlatform";
@@ -100,6 +101,35 @@ describe("editor", () => {
     const firstId = manifest.images[0]!.id;
     await user.click(await screen.findByRole("button", { name: "Move image 1 down" }));
     await waitFor(() => expect(store.get(manifest.assignmentId)!.images.find((i) => i.id === firstId)!.order).toBe(1), { timeout: 2000 });
+  });
+
+  it("replaces a photo's image and camera data but keeps its notes and comments", async () => {
+    let manifest = sampleManifest(2);
+    const target = manifest.images[0]!;
+    manifest = updateUserNotes(manifest, target.id, { caption: "Reviewed caption" });
+    manifest = addComment(manifest, target.id, "Crop the bottom", "Ratish");
+    const { platform, store } = fakePlatform([manifest]);
+    const replacement = { ...sampleManifest(1).images[0]!, originalFilename: "DSC_0412-Edit.jpg", exposure: { iso: 3200 } };
+    platform.addImages = vi.fn(async () => ({ entries: [replacement], failures: [], cancelled: false }));
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /Replace image/ }));
+    expect(platform.addImages).toHaveBeenCalledWith(manifest.assignmentId, { folder: false, multiple: false }, expect.any(Function));
+    expect(await screen.findByText(/Replaced the image with DSC_0412-Edit\.jpg/)).toBeInTheDocument();
+    await waitFor(
+      () => {
+        const img = store.get(manifest.assignmentId)!.images.find((i) => i.id === target.id)!;
+        expect(img.originalFilename).toBe("DSC_0412-Edit.jpg");
+        expect(img.exposure).toEqual({ iso: 3200 });
+        expect(img.asset).toBe(replacement.asset);
+        expect(img.user.caption).toBe("Reviewed caption");
+        expect(img.comments.map((c) => c.text)).toEqual(["Crop the bottom"]);
+        expect(img.order).toBe(0);
+      },
+      { timeout: 2000 },
+    );
+    expect(screen.getByRole("textbox", { name: "Caption" })).toHaveValue("Reviewed caption");
   });
 
   it("shows an empty state in the library", async () => {

@@ -5,6 +5,7 @@ import {
   appendImages,
   deleteComment,
   removeImage,
+  replaceImage,
   reorderImages,
   sortedImages,
   updateUserNotes,
@@ -128,6 +129,26 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
     setProgress({ done: 0, total: 0 });
     try {
       handleResult(await platform.addImages(aid, { folder }, setProgress));
+    } catch (e) {
+      toast(describeError(e), "error");
+    } finally {
+      setProgress(null);
+    }
+  };
+
+  const replace = async (imageId: string) => {
+    setProgress({ done: 0, total: 0 });
+    try {
+      const res = await platform.addImages(aid, { folder: false, multiple: false }, setProgress);
+      if (!res) return;
+      const entry = res.entries[0];
+      if (!entry) {
+        toast(res.failures[0] ? `Could not replace the image: ${res.failures[0].message}` : "No image was replaced.", "error");
+        return;
+      }
+      for (const w of new Set(res.warnings ?? [])) toast(w, "error");
+      update((m) => replaceImage(m, imageId, entry));
+      toast(`Replaced the image with ${entry.originalFilename}. Notes and comments are unchanged.`);
     } catch (e) {
       toast(describeError(e), "error");
     } finally {
@@ -302,7 +323,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                   onAdd={(text) => update((m) => addComment(m, selected.id, text, author))}
                   onDelete={(cid) => update((m) => deleteComment(m, selected.id, cid))}
                 />
-                <CameraSection image={selected} />
+                <CameraSection image={selected} onReplace={() => void replace(selected.id)} replacing={!!progress} />
               </>
             ) : null}
             <section className="panel-section" aria-labelledby="project-notes-h">
