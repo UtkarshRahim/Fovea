@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Downloads ExifTool into apps/desktop/src-tauri/resources/exiftool so it is bundled with the app.
 //   macOS:   Image-ExifTool Perl distribution (runs with the system /usr/bin/perl)
-//   Windows: official standalone 64-bit build (exiftool.exe + exiftool_files, Perl included)
-// Usage: node scripts/fetch-exiftool.mjs [--platform=darwin|win32] [--version=13.xx]
+//   Windows: official standalone 64- or 32-bit build (exiftool.exe + exiftool_files, Perl included)
+// Usage: node scripts/fetch-exiftool.mjs [--platform=darwin|win32] [--arch=x64|x86] [--version=13.xx]
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -11,6 +11,8 @@ import { join, resolve } from "node:path";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
 const platform = args.platform ?? process.platform;
+const arch = args.arch ?? (process.arch === "ia32" ? "x86" : "x64");
+if (!["x64", "x86"].includes(arch)) throw new Error(`Unsupported --arch=${arch} (use x64 or x86)`);
 const root = resolve(import.meta.dirname, "..");
 const dest = join(root, "apps/desktop/src-tauri/resources/exiftool");
 
@@ -57,7 +59,7 @@ for (const entry of existsSync(dest) ? readdirSync(dest) : []) {
 mkdirSync(dest, { recursive: true });
 
 if (platform === "win32") {
-  const name = `exiftool-${version}_64.zip`;
+  const name = `exiftool-${version}_${arch === "x86" ? "32" : "64"}.zip`;
   const zip = join(work, name);
   writeFileSync(zip, await download(name));
   try {
@@ -86,4 +88,4 @@ writeFileSync(join(dest, "VERSION"), `${version}\n`);
 makeWritable(dest);
 makeWritable(work);
 rmSync(work, { recursive: true, force: true });
-console.log(`ExifTool ${version} (${platform}) → ${dest}`);
+console.log(`ExifTool ${version} (${platform}${platform === "win32" ? ` ${arch}` : ""}) → ${dest}`);
