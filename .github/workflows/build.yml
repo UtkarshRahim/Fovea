@@ -131,14 +131,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          shopt -s nullglob
-          files=(dist/*.dmg dist/*.exe)
+          # Each artifact keeps its bundle folder (dmg/ or nsis/), so search below dist/.
+          shopt -s nullglob globstar
+          files=(dist/**/*.dmg dist/**/*.exe)
           if [ ${#files[@]} -eq 0 ]; then echo "::error::No installers were built, so there is nothing to release."; exit 1; fi
           version=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")
           if [ "$GITHUB_REF_TYPE" = tag ]; then tag="$GITHUB_REF_NAME"; else tag="v${version}-build.${GITHUB_RUN_NUMBER}"; fi
           missing=""
           for p in "aarch64.dmg:macOS Apple silicon" "x64.dmg:macOS Intel" "x64-setup.exe:Windows 64-bit" "x86-setup.exe:Windows 32-bit"; do
-            found=(dist/*"_${p%%:*}")
+            found=(dist/**/*"_${p%%:*}")
             [ ${#found[@]} -gt 0 ] || missing="$missing- ${p#*:}"$'\n'
           done
           {
