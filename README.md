@@ -134,21 +134,20 @@ need a Windows PC to make the `.exe`.
 | Trigger | Tests | Web app (GitHub Pages) | `.dmg` + `.exe` |
 |---|---|---|---|
 | Push to `main` | ✓ | refreshed | — |
-| Push a tag `v*` (e.g. `v0.1.0`) | ✓ | — | built and attached to a **draft release** |
-| Actions → Build and deploy → **Run workflow** | ✓ | if "web" is ticked | if "desktop" is ticked, as downloadable artifacts |
+| Push a tag `v*` (e.g. `v0.1.0`) | ✓ | — | published as release `v0.1.0` |
+| Actions → Build and deploy → **Run workflow** | ✓ | if "web" is ticked | if "desktop" is ticked, published as a new release `v0.1.0-build.<run number>` |
 
-Producing installers:
+Every run that builds installers publishes them as a **public release**, marked as the latest, so anyone can
+download them from the repository's *Releases* page without signing in. If one platform's build fails, the others are
+still published and the release notes say which one is missing. The same files are also kept on the run page under
+*Artifacts* (`framenote-macos-apple-silicon`, `framenote-macos-intel`, `framenote-windows-x64`,
+`framenote-windows-x86`) for 90 days.
 
-- **From the Actions tab:** open the finished run and download `framenote-macos-apple-silicon`,
-  `framenote-macos-intel`, `framenote-windows-x64` or `framenote-windows-x86` (32-bit) under *Artifacts*.
-- **As a release:**
+For a numbered release, bump the version in `apps/desktop/src-tauri/tauri.conf.json`, then:
 
-  ```bash
-  git tag v0.1.0 && git push origin v0.1.0
-  ```
-
-  Then open *Releases*, check the draft, and publish it. Bump the version in
-  `apps/desktop/src-tauri/tauri.conf.json` first so the file names match.
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
 
 Setting up the web app once: in the repository go to **Settings → Pages → Build and deployment → Source** and pick
 **GitHub Actions**. After the next push to `main` the app is live at `https://<user>.github.io/<repo>/` (for this

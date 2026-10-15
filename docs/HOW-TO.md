@@ -25,7 +25,9 @@ same screens. Where the desktop app behaves differently, the text says so.
 
 ## 1. Install
 
-- **Mac:** download the `.dmg` from the release and follow [Install on a Mac](../README.md#install-on-a-mac). The app
+Installers are on the [Releases page](https://github.com/UtkarshRahim/FrameNote/releases/latest).
+
+- **Mac:** download the `.dmg` (`aarch64` for Apple silicon, `x64` for Intel) and follow [Install on a Mac](../README.md#install-on-a-mac). The app
   isn't signed with an Apple Developer ID, so macOS needs one Terminal command the first time.
 - **Windows:** run `Frame Note_x.y.z_x64-setup.exe`, or `Frame Note_x.y.z_x86-setup.exe` on 32-bit Windows. If
   SmartScreen says "Windows protected your PC", click **More info → Run anyway**. See
