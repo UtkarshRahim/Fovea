@@ -90,6 +90,54 @@ export function largestEmbeddedJpeg(data: Uint8Array): EmbeddedJpeg | null {
   return best;
 }
 
+/**
+ * Size of the full-resolution image in a TIFF-based RAW (NEF, ARW, DNG, CR2), found by walking IFD0, its chain and
+ * SubIFDs. IFD0's ImageWidth is often a 160×120 thumbnail, so only IFDs marked full resolution (NewSubfileType 0,
+ * or absent) count, and the largest wins. Returns null for non-TIFF files such as CR3.
+ */
+export function rawImageSize(data: Uint8Array): { width: number; height: number } | null {
+  if (data.length < 8) return null;
+  const le = data[0] === 0x49 && data[1] === 0x49;
+  if (!le && !(data[0] === 0x4d && data[1] === 0x4d)) return null;
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const u16 = (o: number) => view.getUint16(o, le);
+  const u32 = (o: number) => view.getUint32(o, le);
+  if (u16(2) !== 42) return null;
+
+  const TYPE_SIZE: Record<number, number> = { 3: 2, 4: 4, 13: 4 };
+  const queue = [u32(4)];
+  const seen = new Set<number>();
+  let best: { width: number; height: number } | null = null;
+  while (queue.length && seen.size < 64) {
+    const ifd = queue.shift()!;
+    if (!ifd || seen.has(ifd) || ifd + 2 > data.length) continue;
+    seen.add(ifd);
+    const count = u16(ifd);
+    if (count > 1000 || ifd + 2 + count * 12 + 4 > data.length) continue;
+    let width = 0;
+    let height = 0;
+    let subfile = 0;
+    for (let i = 0; i < count; i++) {
+      const e = ifd + 2 + i * 12;
+      const tag = u16(e);
+      const type = u16(e + 2);
+      const n = u32(e + 4);
+      const size = TYPE_SIZE[type];
+      if (!size) continue;
+      const first = (o: number) => (type === 3 ? u16(o) : u32(o));
+      const at = n * size <= 4 ? e + 8 : u32(e + 8);
+      if (at + n * size > data.length) continue;
+      if (tag === 0x00fe) subfile = first(at);
+      else if (tag === 0x0100) width = first(at);
+      else if (tag === 0x0101) height = first(at);
+      else if (tag === 0x014a) for (let k = 0; k < Math.min(n, 16); k++) queue.push(first(at + k * size));
+    }
+    if (subfile === 0 && width && height && (!best || width * height > best.width * best.height)) best = { width, height };
+    queue.push(u32(ifd + 2 + count * 12));
+  }
+  return best;
+}
+
 export type SourceKind = "jpeg" | "png" | "tiff" | "raw" | "heic" | "unknown";
 
 export const RAW_EXTENSIONS = ["nef", "nrw", "cr2", "cr3", "arw", "srf", "sr2", "dng", "raf", "orf", "rw2", "pef"];

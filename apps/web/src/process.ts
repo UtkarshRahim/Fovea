@@ -6,6 +6,7 @@ import {
   largestEmbeddedJpeg,
   newImageId,
   normalizeTags,
+  rawImageSize,
   sha256Hex,
   type AssetSource,
   type CameraMetadata,
@@ -23,7 +24,8 @@ export interface ProcessedFile {
 
 export class ProcessError extends Error {}
 
-async function readMetadata(file: Blob): Promise<CameraMetadata> {
+/** `rawSize` is set for RAW files: their ImageWidth/ImageHeight usually describe a thumbnail, so it replaces them. */
+async function readMetadata(file: Blob, rawSize?: { width: number; height: number } | null): Promise<CameraMetadata> {
   try {
     const tags = await exifr.parse(file, {
       tiff: true,
@@ -36,7 +38,13 @@ async function readMetadata(file: Blob): Promise<CameraMetadata> {
       reviveValues: false,
       mergeOutput: true,
     });
-    return tags ? normalizeTags(tags as Record<string, unknown>) : {};
+    if (!tags) return {};
+    if (rawSize !== undefined) {
+      delete tags.ImageWidth;
+      delete tags.ImageHeight;
+      if (rawSize) Object.assign(tags, { ImageWidth: rawSize.width, ImageHeight: rawSize.height });
+    }
+    return normalizeTags(tags as Record<string, unknown>);
   } catch {
     return {};
   }
@@ -107,7 +115,8 @@ export async function processFile(file: File): Promise<ProcessedFile> {
   let source: Blob;
   let assetSource: AssetSource;
   let honourEmbedded = true;
-  const metadata = await readMetadata(file);
+  const rawBytes = kind === "raw" ? new Uint8Array(await file.arrayBuffer()) : undefined;
+  const metadata = await readMetadata(file, rawBytes ? rawImageSize(rawBytes) : undefined);
 
   switch (kind) {
     case "jpeg":
@@ -123,8 +132,7 @@ export async function processFile(file: File): Promise<ProcessedFile> {
       assetSource = "tiff-converted";
       break;
     case "raw": {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const preview = largestEmbeddedJpeg(bytes);
+      const preview = largestEmbeddedJpeg(rawBytes!);
       if (!preview) {
         throw new ProcessError(
           `No usable embedded preview was found in this ${extensionOf(file.name).toUpperCase() || "RAW"} file. Open it in the Frame Note desktop app, which can decode more RAW variants.`,

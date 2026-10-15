@@ -50,6 +50,10 @@ Short record of implementation choices and their trade-offs. Newest at the botto
   ambiguous ("Sigma or Tamron …"), so they are kept in `rawMetadata` and never shown as the lens.
 - **exifr in the browser** for JPEG/TIFF-based RAWs. Missing values stay missing. CR3 metadata is usually unavailable
   in the browser.
+- **RAW original size in the browser.** exifr reads IFD0, whose ImageWidth/ImageHeight in a NEF describe the
+  160×120 thumbnail. EXIF sizes are used when present (CR2, ARW, DNG). Otherwise `rawImageSize` walks the TIFF IFDs
+  and SubIFDs for the largest full-resolution image, which matches ExifTool on desktop. Sizes smaller than the stored
+  asset are not shown, which hides wrong values saved by older versions.
 
 ## RAW
 

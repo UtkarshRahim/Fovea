@@ -1,4 +1,4 @@
-import type { CameraMetadata, OverlayField } from "./manifest";
+import type { CameraMetadata, ImageEntry, OverlayField } from "./manifest";
 
 function trimNumber(n: number, maxDecimals: number): string {
   return Number(n.toFixed(maxDecimals)).toString();
@@ -46,6 +46,18 @@ export function formatExposureCompensation(ev: number | undefined): string | und
   const rounded = Math.round(ev * 10) / 10;
   if (rounded === 0) return "0 EV";
   return `${rounded > 0 ? "+" : "-"}${trimNumber(Math.abs(rounded), 1)} EV`;
+}
+
+/**
+ * "8288 × 5520". A recorded size smaller than the stored asset cannot be the original's: older web imports of
+ * Nikon RAWs recorded the 160×120 thumbnail, so such values are not shown.
+ */
+export function formatOriginalSize(img: Pick<ImageEntry, "dimensions" | "assetDimensions">): string | undefined {
+  const d = img.dimensions;
+  if (!d) return undefined;
+  const a = img.assetDimensions;
+  if (a && Math.max(d.width, d.height) < Math.max(a.width, a.height)) return undefined;
+  return `${d.width} × ${d.height}`;
 }
 
 /** Manifest stores capture time as camera-local ISO without zone; render it without shifting zones. */

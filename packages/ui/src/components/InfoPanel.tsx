@@ -8,6 +8,7 @@ import {
   formatFocalLength,
   formatIso,
   formatLens,
+  formatOriginalSize,
   formatShutterSpeed,
   type Comment,
   type ImageEntry,
@@ -63,7 +64,7 @@ export function CameraSection({ image, onReplace, replacing }: { image: ImageEnt
     ["Lens", formatLens(image)],
     ["Exp. comp.", formatExposureCompensation(e?.exposureCompensationEv)],
     ["Captured", formatCaptureDate(image.capturedAt)],
-    ["Original size", image.dimensions ? `${image.dimensions.width} × ${image.dimensions.height}` : undefined],
+    ["Original size", formatOriginalSize(image)],
     ["GPS", image.gps ? "Present (stripped from exports by default)" : undefined],
   ];
   const present = rows.filter(([, v]) => v);
