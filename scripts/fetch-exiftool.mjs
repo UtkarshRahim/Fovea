@@ -5,7 +5,7 @@
 // Usage: node scripts/fetch-exiftool.mjs [--platform=darwin|win32] [--arch=x64|x86] [--version=13.xx]
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -72,7 +72,7 @@ if (platform === "win32") {
   const src = join(work, folder);
   const exe = readdirSync(src).find((f) => f.toLowerCase().startsWith("exiftool") && f.toLowerCase().endsWith(".exe"));
   if (!exe) throw new Error("exiftool executable not found in archive");
-  renameSync(join(src, exe), join(dest, "exiftool.exe"));
+  cpSync(join(src, exe), join(dest, "exiftool.exe"));
   cpSync(join(src, "exiftool_files"), join(dest, "exiftool_files"), { recursive: true });
 } else {
   const name = `Image-ExifTool-${version}.tar.gz`;
