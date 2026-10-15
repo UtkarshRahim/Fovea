@@ -62,8 +62,22 @@ These are expected to work wherever the camera embeds a baseline JPEG preview, b
 
 | Date | Device | OS / browser | Scope | Result |
 |---|---|---|---|---|
-| 2026-10-14 | Linux VM (dev host, not a target) | Tauri 2 dev build, WebKitGTK 2.52 | Desktop flow with the four RAW samples | see below |
+| 2026-10-14 | Linux VM (dev host, not a target) | Tauri 2 dev build, WebKitGTK 2.52 | Desktop flow with the four RAW samples | pass after fixes (below) |
+| 2026-10-14 | Linux VM | Chrome, desktop and 390×844 device emulation | Web flow: RAW import, view/review, zoom, shortcuts, `.framenote` export and folder import | pass |
+
+Desktop, with the Z9 NEF, R7 CR3, 5D4 CR2 and A1 ARW samples: folder import (4 of 4, about 5 s), camera data and
+overlay values match ExifTool, captions autosave, reordering, "Show on photo", presentation shortcuts, `.framenote`
+export (13 MB) and import, unzipped-folder import, view mode, zoom (keys, double-click, Ctrl + wheel, drag to pan),
+drag-to-swipe, Review toggle, project switcher and the shortcuts panel all worked.
+
+Found and fixed:
+
+- **Export image failed with "The operation is insecure."** Drawing the asset-protocol URL tainted the canvas. Export
+  now renders from the stored bytes through a `blob:` URL. Re-tested: a 4096 × 2731 JPEG was written.
+- **`.framenote` import appeared to do nothing.** It was run against a stale debug binary started without its dev
+  server. On a fresh `pnpm dev:desktop` it imported "Sal Forest Test (imported)" with 4 photos.
+- **Picking the `assets` folder gave a confusing error.** The message now says to choose the folder one level up.
 
 Not yet tested: real macOS and Windows machines, Android Chrome, iOS Safari (iPhone and iPad), offline use after
-first load on a phone, memory with 100-image assignments. Performance targets (cold start, navigation latency, import
+first load on a phone, memory with 100-image projects. Performance targets (cold start, navigation latency, import
 throughput, peak memory) have not been measured yet.
