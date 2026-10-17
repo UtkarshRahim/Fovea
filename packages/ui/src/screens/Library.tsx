@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ChevronDown, FileArchive, FileUp, FolderInput, Plus } from "lucide-react";
+import { ChevronDown, FileArchive, FileUp, FolderInput, FolderOpen, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { FoveaError, type AssignmentSummary } from "@fovea/core";
 import type { ImportedFovea } from "../platform";
 import { usePlatform, type StorageInfo } from "../platform";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
-import { Button, ConfirmDialog, Dialog } from "../components/primitives";
+import { Button, ConfirmDialog, Dialog, IconButton } from "../components/primitives";
 import { BrandMark } from "../components/BrandMark";
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
@@ -126,27 +126,68 @@ export function Library() {
             Loading projects…
           </p>
         ) : items.length === 0 ? (
-          <div className="empty">
-            <h2>No projects yet</h2>
-            <p>
-              Create a project and add photographs
-              {platform.capabilities.rawImport ? " — RAW files (NEF, CR2, CR3, ARW), JPEG or TIFF" : " — JPEG, or RAW files using their embedded preview"}.
-              Or import a <span className="mono">.fovea</span> file someone shared with you
-              {platform.capabilities.projectFolderImport ? ", or a folder you unzipped from one" : ""}.
-            </p>
-            <div className="empty-actions">
-              <Button variant="primary" onClick={() => setCreating(true)}>
-                <Plus size={16} /> New project
-              </Button>
-              {importButton}
+          <div className="welcome">
+            <section className="welcome-hero" aria-labelledby="welcome-h">
+              <p className="eyebrow">Welcome</p>
+              <h2 id="welcome-h">
+                Welcome to <em>Fovea</em>
+              </h2>
+              <p className="welcome-lede">
+                Bring your fieldwork in from the card, see exactly what the camera saw, and present it the way it deserves — fullscreen,
+                captioned, with the settings that made the shot.
+              </p>
+              <ul className="welcome-points">
+                <li>
+                  <span className="mono">01</span>
+                  <p>
+                    <strong>Open</strong> RAW, JPEG or TIFF straight from your folders.
+                  </p>
+                </li>
+                <li>
+                  <span className="mono">02</span>
+                  <p>
+                    <strong>Caption</strong> each frame, with camera data read for you.
+                  </p>
+                </li>
+                <li>
+                  <span className="mono">03</span>
+                  <p>
+                    <strong>Present</strong> fullscreen, or share it all as one <span className="mono">.fovea</span> file.
+                  </p>
+                </li>
+              </ul>
+            </section>
+            <div className="empty">
+              <h3>No projects yet</h3>
+              <p>
+                Create a project and add photographs
+                {platform.capabilities.rawImport ? " — RAW files (NEF, CR2, CR3, ARW), JPEG or TIFF" : " — JPEG, or RAW files using their embedded preview"}.
+                Or import a <span className="mono">.fovea</span> file someone shared with you
+                {platform.capabilities.projectFolderImport ? ", or a folder you unzipped from one" : ""}.
+              </p>
+              <div className="empty-actions">
+                <Button variant="primary" onClick={() => setCreating(true)}>
+                  <Plus size={16} /> New project
+                </Button>
+                {importButton}
+              </div>
             </div>
           </div>
         ) : (
-          <ul className="assignment-list" aria-label="Projects">
-            {items.map((a) => (
-              <AssignmentRow key={a.id} item={a} onRename={() => setRenaming(a)} onDelete={() => setDeleting(a)} />
-            ))}
-          </ul>
+          <section className="projects" aria-labelledby="projects-h">
+            <div className="library-hero">
+              <p className="eyebrow">Library</p>
+              <h2 id="projects-h">Projects</h2>
+              <p className="muted">
+                {items.length} {items.length === 1 ? "project" : "projects"} · {items.reduce((n, a) => n + a.imageCount, 0)} photographs
+              </p>
+            </div>
+            <ul className="project-grid" aria-label="Projects">
+              {items.map((a, i) => (
+                <AssignmentCard key={a.id} item={a} index={i} onRename={() => setRenaming(a)} onDelete={() => setDeleting(a)} />
+              ))}
+            </ul>
+          </section>
         )}
         <RecentFolders />
         <footer className="library-foot small muted">
@@ -215,33 +256,64 @@ export function Library() {
   );
 }
 
-function AssignmentRow({ item, onRename, onDelete }: { item: AssignmentSummary; onRename: () => void; onDelete: () => void }) {
+function AssignmentCard({
+  item,
+  index,
+  onRename,
+  onDelete,
+}: {
+  item: AssignmentSummary;
+  index: number;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
   const cover = useAssetUrl(item.id, item.coverThumbnail);
   const open = () => navigate({ name: "editor", id: item.id });
   return (
-    <li className="assignment-row">
-      <button type="button" className="assignment-cover" onClick={open} aria-label={`Open ${item.title}`}>
+    <li className="project-card" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
+      <button type="button" className="project-cover" onClick={open} aria-label={`Open ${item.title}`}>
         {cover ? <img src={cover} alt="" loading="lazy" /> : <span className="cover-empty" />}
       </button>
-      <div className="assignment-info">
-        <button type="button" className="assignment-title" onClick={open}>
-          {item.title}
-        </button>
-        <p className="small muted mono">
-          {item.imageCount} {item.imageCount === 1 ? "image" : "images"} ·{" "}
-          {new Date(item.modifiedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
-        </p>
-      </div>
-      <div className="assignment-actions">
-        <Button size="sm" variant="ghost" onClick={onRename}>
-          Rename
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDelete}>
-          Delete
-        </Button>
-        <Button size="sm" onClick={open}>
-          Open
-        </Button>
+      <div className="project-info">
+        <div className="project-text">
+          <button type="button" className="project-title" onClick={open}>
+            {item.title}
+          </button>
+          <p className="small muted mono">
+            {item.imageCount} {item.imageCount === 1 ? "image" : "images"} ·{" "}
+            {new Date(item.modifiedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+          </p>
+        </div>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <IconButton label={`More actions for ${item.title}`}>
+              <MoreHorizontal size={18} />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content className="menu menu-compact" align="end" sideOffset={4} collisionPadding={8}>
+              <DropdownMenu.Item className="menu-item" onSelect={open}>
+                <span className="menu-check" aria-hidden="true">
+                  <FolderOpen size={14} />
+                </span>
+                <span className="menu-text">Open</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item className="menu-item" onSelect={onRename}>
+                <span className="menu-check" aria-hidden="true">
+                  <Pencil size={14} />
+                </span>
+                <span className="menu-text">Rename</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className="menu-sep" />
+              <DropdownMenu.Item className="menu-item menu-item-danger" onSelect={onDelete}>
+                <span className="menu-check" aria-hidden="true">
+                  <Trash2 size={14} />
+                </span>
+                <span className="menu-text">Delete</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </div>
     </li>
   );

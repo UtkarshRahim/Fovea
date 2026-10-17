@@ -6,10 +6,13 @@
   --muted: #a8a49b;
   --border: #2c2c2b;
   --border-strong: #3a3a39;
-  --accent: #d9c9a3;
-  --accent-text: #151515;
+  /* Pantone 577 C, a lichen green, with the brand's forest green for text on it. */
+  --accent: #a9c47f;
+  --accent-hover: #b9d290;
+  --accent-text: #17211c;
+  --accent-soft: rgba(169, 196, 127, 0.12);
   --danger: #e2826f;
-  --focus: #e8d9b0;
+  --focus: #c3dc9c;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -17,7 +20,7 @@
   --space-5: 24px;
   --space-6: 32px;
   --radius: 4px;
-  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --sans: "Instrument Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --serif: "Newsreader", Georgia, serif;
   --topbar-h: 56px;
@@ -130,7 +133,8 @@ select {
   border-color: var(--accent);
 }
 .btn-primary:hover:not(:disabled) {
-  background: #e6d8b6;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .btn-ghost {
   border-color: transparent;
@@ -428,10 +432,15 @@ select {
   align-items: center;
   gap: var(--space-3);
 }
+.brand {
+  gap: 10px;
+}
 .brand h1 {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font: 500 21px/1 var(--serif);
+  letter-spacing: -0.01em;
+  /* Newsreader's ink sits high in its line box; this centres the letters on the mark. */
+  position: relative;
+  top: 0.13em;
 }
 .brand-mark {
   flex: none;
@@ -447,27 +456,124 @@ select {
 .library-main {
   flex: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-5) max(var(--space-4), env(safe-area-inset-right)) var(--space-6) max(var(--space-4), env(safe-area-inset-left));
+  padding: var(--space-6) max(var(--space-5), env(safe-area-inset-right)) var(--space-6) max(var(--space-5), env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
+  gap: 48px;
+}
+.eyebrow {
+  font: 500 11px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
+.library-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+.library-hero h2,
+.welcome-hero h2 {
+  font: 400 clamp(40px, 6vw, 64px) / 1 var(--serif);
+  letter-spacing: -0.02em;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.welcome-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+  animation: rise 420ms ease-out both;
+}
+.welcome-hero h2 {
+  font-size: clamp(44px, 8vw, 88px);
+}
+.welcome-hero h2 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.welcome-lede {
+  font: 400 clamp(18px, 2vw, 21px) / 1.5 var(--serif);
+  color: #cfcbc2;
+  max-width: 58ch;
+}
+.welcome-points {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-5);
 }
+.welcome-points li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-strong);
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.welcome-points li > .mono {
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.welcome-points strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Viewfinder corners, echoing the brand mark. */
+.empty,
+.project-cover {
+  --vf-c: var(--accent);
+  --vf-t: 2px;
+  --vf-l: 22px;
+}
+.empty::before,
+.project-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--vf-c), var(--vf-c)) left top / var(--vf-l) var(--vf-t),
+    linear-gradient(var(--vf-c), var(--vf-c)) left top / var(--vf-t) var(--vf-l),
+    linear-gradient(var(--vf-c), var(--vf-c)) right top / var(--vf-l) var(--vf-t),
+    linear-gradient(var(--vf-c), var(--vf-c)) right top / var(--vf-t) var(--vf-l),
+    linear-gradient(var(--vf-c), var(--vf-c)) left bottom / var(--vf-l) var(--vf-t),
+    linear-gradient(var(--vf-c), var(--vf-c)) left bottom / var(--vf-t) var(--vf-l),
+    linear-gradient(var(--vf-c), var(--vf-c)) right bottom / var(--vf-l) var(--vf-t),
+    linear-gradient(var(--vf-c), var(--vf-c)) right bottom / var(--vf-t) var(--vf-l);
+  background-repeat: no-repeat;
+}
+
 .empty {
-  border: 1px dashed var(--border-strong);
-  padding: var(--space-6);
+  position: relative;
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-width: 620px;
+  max-width: 520px;
+  background: radial-gradient(120% 120% at 0% 0%, var(--accent-soft), transparent 65%);
+  --vf-l: 16px;
+  animation: rise 420ms ease-out 120ms both;
 }
-.empty h2 {
-  font-size: 18px;
-  font-weight: 500;
+.empty h3 {
+  font: 400 24px/1.15 var(--serif);
 }
 .empty p {
   color: var(--muted);
+  max-width: 54ch;
 }
 .empty-actions {
   display: flex;
@@ -475,34 +581,59 @@ select {
   flex-wrap: wrap;
   margin-top: var(--space-2);
 }
-.assignment-list {
+
+.project-grid {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border);
-}
-.assignment-row {
   display: grid;
-  grid-template-columns: 96px 1fr auto;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-6) var(--space-5);
 }
-.assignment-cover {
-  width: 96px;
-  height: 64px;
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  animation: rise 420ms ease-out both;
+}
+.project-cover {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   padding: 0;
   border: 0;
+  border-radius: 2px;
   background: #0e0e0e;
   cursor: pointer;
   overflow: hidden;
+  --vf-c: rgba(255, 255, 255, 0.85);
+  --vf-l: 18px;
 }
-.assignment-cover img {
+.project-cover::after {
+  inset: 10px;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 180ms ease-out, transform 220ms ease-out;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.7));
+}
+.project-cover:hover::after,
+.project-cover:focus-visible::after {
+  opacity: 1;
+  transform: none;
+}
+.project-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 400ms ease-out, filter 300ms;
+  filter: saturate(0.92);
+}
+.project-cover:hover img {
+  transform: scale(1.025);
+  filter: none;
 }
 .cover-empty {
   display: block;
@@ -510,15 +641,23 @@ select {
   height: 100%;
   background: repeating-linear-gradient(135deg, #1a1a1a 0 6px, #161616 6px 12px);
 }
-.assignment-info {
-  min-width: 0;
+.project-info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
 }
-.assignment-title {
+.project-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.project-title {
   background: none;
   border: 0;
   padding: 0;
-  font-size: 15px;
-  font-weight: 500;
+  font: 400 20px/1.25 var(--serif);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
@@ -526,12 +665,37 @@ select {
   white-space: nowrap;
   max-width: 100%;
 }
-.assignment-actions {
-  display: flex;
-  gap: var(--space-1);
+.project-title:hover {
+  color: var(--accent);
 }
+.project-info .icon-btn {
+  margin: -4px -8px 0 0;
+  color: var(--muted);
+}
+.project-info .icon-btn:hover,
+.project-info .icon-btn[data-state="open"] {
+  color: var(--text);
+}
+.menu-compact {
+  min-width: 180px;
+}
+.menu-item-danger {
+  color: var(--danger);
+}
+.menu-item-danger .menu-check {
+  color: inherit;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 .library-foot {
   margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 @media (max-width: 480px) {
   .hide-xs {
@@ -542,16 +706,13 @@ select {
   }
 }
 @media (max-width: 640px) {
-  .assignment-row {
-    grid-template-columns: 72px 1fr;
+  .library-main {
+    gap: var(--space-6);
+    padding-top: var(--space-5);
   }
-  .assignment-cover {
-    width: 72px;
-    height: 48px;
-  }
-  .assignment-actions {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
+  .project-grid,
+  .welcome-points {
+    grid-template-columns: 1fr;
   }
   .topbar .btn {
     padding: 0 var(--space-3);
@@ -846,7 +1007,7 @@ select {
   background: var(--border-strong);
 }
 .review-toggle[aria-pressed="true"] {
-  background: #2a2925;
+  background: var(--accent-soft);
   border-color: var(--accent);
 }
 
@@ -1447,6 +1608,7 @@ select {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation: none !important;
   }
 }
 
