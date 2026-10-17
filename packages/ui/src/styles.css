@@ -434,10 +434,8 @@ select {
   letter-spacing: 0.02em;
 }
 .brand-mark {
-  width: 18px;
-  height: 14px;
-  border: 1.5px solid var(--text);
-  border-bottom-width: 4px;
+  flex: none;
+  color: #f2eee3;
 }
 
 /* Library */

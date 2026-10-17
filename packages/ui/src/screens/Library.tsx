@@ -7,6 +7,7 @@ import { usePlatform, type StorageInfo } from "../platform";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
 import { Button, ConfirmDialog, Dialog } from "../components/primitives";
+import { BrandMark } from "../components/BrandMark";
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { OpenPhotosButton, RecentFolders } from "../components/RecentFolders";
@@ -101,7 +102,7 @@ export function Library() {
     <div className="library" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />
+          <BrandMark />
           <h1>Fovea</h1>
         </div>
         <div className="topbar-actions">

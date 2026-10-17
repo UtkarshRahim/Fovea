@@ -1,4 +1,9 @@
-# Fovea
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/fovea-lockup-light.svg">
+    <img src="branding/fovea-lockup.svg" alt="Fovea" width="300">
+  </picture>
+</h1>
 
 A local-first presentation and review tool for wildlife photographers.
 
