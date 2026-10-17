@@ -9,7 +9,9 @@ import { navigate } from "../lib/router";
 import { Button, ConfirmDialog, Dialog } from "../components/primitives";
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
+import { OpenPhotosButton, RecentFolders } from "../components/RecentFolders";
 import { isTypingTarget } from "../lib/keys";
+import { openInViewer } from "../lib/viewerSession";
 
 export function describeError(e: unknown): string {
   if (e instanceof FramenoteError) return e.details?.length ? `${e.message} (${e.details.slice(0, 3).join("; ")})` : e.message;
@@ -84,8 +86,15 @@ export function Library() {
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const file = Array.from(e.dataTransfer.files).find((f) => f.name.toLowerCase().endsWith(".framenote"));
+    const files = Array.from(e.dataTransfer.files);
+    const file = files.find((f) => f.name.toLowerCase().endsWith(".framenote"));
     if (file) void doImport(file);
+    else if (files.length && platform.viewer?.openFiles) {
+      platform.viewer
+        .openFiles(files)
+        .then((folder) => folder && openInViewer(folder))
+        .catch((err) => toast(describeError(err), "error"));
+    }
   };
 
   return (
@@ -97,6 +106,7 @@ export function Library() {
         </div>
         <div className="topbar-actions">
           <ShortcutsButton onClick={() => setShortcuts(true)} />
+          <OpenPhotosButton compact />
           {importButton}
           <Button variant="primary" onClick={() => setCreating(true)}>
             <Plus size={16} /> New project
@@ -137,6 +147,7 @@ export function Library() {
             ))}
           </ul>
         )}
+        <RecentFolders />
         <footer className="library-foot small muted">
           Photographs stay on this {platform.kind === "web" ? "device, in this browser" : "computer"}. Nothing is uploaded.
           {platform.kind === "web" ? " Browsers can clear stored data — export a .framenote as your backup." : ""}

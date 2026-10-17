@@ -1087,6 +1087,123 @@ select {
   }
 }
 
+/* Viewer: photos straight from a folder */
+.viewer {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.viewer > .center-message {
+  flex: 1;
+}
+.viewer-heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.viewer-title {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.viewer-sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.viewer-filename {
+  color: var(--text);
+}
+.viewer-stage {
+  flex: 1;
+}
+.viewer-stage > .center-message {
+  position: absolute;
+  inset: 0 0 var(--stage-controls-strip) 0;
+  min-height: 0;
+}
+.viewer-loading {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 2;
+}
+.viewer-stage-actions {
+  position: absolute;
+  right: max(var(--space-3), env(safe-area-inset-right));
+  bottom: 8px;
+  display: flex;
+  gap: 2px;
+  z-index: 2;
+}
+.viewer-stage-actions .icon-btn {
+  width: 34px;
+  height: 34px;
+}
+.viewer-stage-actions [aria-pressed="true"] {
+  color: var(--accent);
+}
+.viewer.is-fullscreen .viewer-topbar,
+.viewer.is-fullscreen .stage-controls,
+.viewer.is-fullscreen .viewer-stage-actions {
+  display: none;
+}
+.viewer.is-fullscreen .viewer-stage {
+  --stage-controls-strip: 0px;
+  background: #000;
+}
+.viewer-recents {
+  width: min(520px, 100%);
+  text-align: left;
+  margin-top: var(--space-4);
+}
+.recent-folders ul {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.recent-folder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.recent-folder-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-1);
+  background: none;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.recent-folder-open:hover .recent-folder-name {
+  text-decoration: underline;
+}
+.recent-folder-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.recent-folder-path {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 640px) {
+  .viewer-stage-actions {
+    display: none;
+  }
+}
+
 /* Stage */
 .stage {
   position: absolute;
@@ -1124,6 +1241,41 @@ select {
 }
 .overlay-canvas {
   display: block;
+}
+/* Focus point: thin viewfinder-style corners with a faint shadow so they read on bright and dark photos alike. */
+.focus-layer {
+  position: absolute;
+  pointer-events: none;
+  animation: focus-in 160ms ease-out;
+}
+.focus-box {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  --c: rgba(255, 255, 255, 0.78);
+  --t: 1.5px;
+  --l: min(12px, 28%);
+  background:
+    linear-gradient(var(--c), var(--c)) left top / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) left top / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) right top / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) right top / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) left bottom / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) left bottom / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) right bottom / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) right bottom / var(--t) var(--l);
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.75));
+}
+@keyframes focus-in {
+  from {
+    opacity: 0;
+  }
+}
+.focus-toggle[aria-pressed="true"] {
+  color: var(--accent);
+}
+.focus-toggle.is-unavailable {
+  opacity: 0.55;
 }
 
 /* Field picker */

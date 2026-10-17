@@ -10,6 +10,11 @@ pub const TAGS: &[&str] = &[
     "ExposureTime", "ISO", "FocalLength", "ExposureCompensation", "DateTimeOriginal", "CreateDate",
     "ImageSize", "Orientation", "GPSLatitude", "GPSLongitude", "GPSLatitudeRef", "GPSLongitudeRef",
     "SerialNumber", "Software", "MIMEType",
+    // Focus points; keep in sync with FOCUS_EXIFTOOL_TAGS in packages/core/src/focus.ts.
+    "AFImageWidth", "AFImageHeight", "AFAreaXPosition", "AFAreaYPosition", "AFAreaWidth", "AFAreaHeight",
+    "AFAreaXPositions", "AFAreaYPositions", "AFAreaWidths", "AFAreaHeights", "AFPointsInFocus", "AFPointsSelected",
+    "CameraType", "CropHiSpeed", "FocusLocation", "FocusPixel", "AFPointSelected", "AFPointPosition", "SubjectArea",
+    "ExifImageWidth", "ExifImageHeight",
 ];
 
 #[derive(Debug, Clone)]

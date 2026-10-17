@@ -46,7 +46,22 @@
         "name": "Frame Note project",
         "description": "Frame Note project",
         "role": "Editor",
+        "rank": "Owner",
         "mimeType": "application/x-framenote"
+      },
+      {
+        "ext": ["jpg", "jpeg", "jpe", "png", "gif", "webp", "avif", "bmp", "tif", "tiff", "heic", "heif"],
+        "name": "Image",
+        "description": "Image",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["nef", "nrw", "cr2", "cr3", "arw", "srf", "sr2", "dng", "raf", "orf", "rw2", "pef"],
+        "name": "Camera RAW image",
+        "description": "Camera RAW image",
+        "role": "Viewer",
+        "rank": "Alternate"
       }
     ],
     "macOS": {

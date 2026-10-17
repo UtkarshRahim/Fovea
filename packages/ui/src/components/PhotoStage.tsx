@@ -1,5 +1,5 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
-import type { ImageEntry, OverlaySettings } from "@framenote/core";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import type { FocusArea, ImageEntry, OverlaySettings } from "@framenote/core";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { OverlayCanvas } from "./OverlayCanvas";
 
@@ -77,35 +77,92 @@ const TAP_PX = 10;
 const TAP_MS = 400;
 const DOUBLE_TAP_MS = 300;
 
+interface StageCommon {
+  fitMode: "contain" | "cover";
+  className?: string;
+  /** Called with +1 (next) or -1 (previous) on a horizontal swipe while not zoomed. */
+  onSwipe?: (direction: 1 | -1) => void;
+  /** Single tap or click that was not part of a double tap. */
+  onTap?: () => void;
+  onZoomChange?: (info: ZoomInfo) => void;
+  /** Leave vertical touch scrolling to the page while not zoomed (for stages inside scrolling layouts). */
+  allowPageScroll?: boolean;
+  /** Where the camera focused; drawn when showFocus is on. */
+  focusAreas?: FocusArea[];
+  showFocus?: boolean;
+}
+
+/** A project photo: URLs come from the project's stored assets and the overlay from its presentation settings. */
 export const PhotoStage = forwardRef<
   PhotoStageHandle,
-  {
+  StageCommon & {
     assignmentId: string;
     image: ImageEntry;
-    fitMode: "contain" | "cover";
     overlay: OverlaySettings;
     showOverlay: boolean;
     minOverlayScale?: number;
-    className?: string;
-    /** Called with +1 (next) or -1 (previous) on a horizontal swipe while not zoomed. */
-    onSwipe?: (direction: 1 | -1) => void;
-    /** Single tap or click that was not part of a double tap. */
-    onTap?: () => void;
-    onZoomChange?: (info: ZoomInfo) => void;
-    /** Leave vertical touch scrolling to the page while not zoomed (for stages inside scrolling layouts). */
-    allowPageScroll?: boolean;
   }
->(function PhotoStage(
-  { assignmentId, image, fitMode, overlay, showOverlay, minOverlayScale = 0.55, className = "", onSwipe, onTap, onZoomChange, allowPageScroll },
+>(function PhotoStage({ assignmentId, image, overlay, showOverlay, minOverlayScale = 0.55, ...rest }, handle) {
+  const thumbUrl = useAssetUrl(assignmentId, image.thumbnail);
+  const fullUrl = useAssetUrl(assignmentId, image.asset);
+  return (
+    <ImageStage
+      ref={handle}
+      {...rest}
+      imageKey={image.id}
+      fullUrl={fullUrl}
+      thumbUrl={thumbUrl}
+      dims={image.assetDimensions ?? image.dimensions ?? { width: 3, height: 2 }}
+      alt={image.user.caption || image.originalFilename}
+      focusAreas={image.focusAreas}
+      overlay={
+        showOverlay
+          ? (w, h) => <OverlayCanvas image={image} settings={overlay} width={w} height={h} minScale={minOverlayScale} />
+          : undefined
+      }
+    />
+  );
+});
+
+/** Zoom, pan, swipe and tap handling around one image. */
+export const ImageStage = forwardRef<
+  PhotoStageHandle,
+  StageCommon & {
+    /** Zoom resets when this changes. */
+    imageKey: string;
+    fullUrl?: string;
+    /** Shown until the full image has loaded. */
+    thumbUrl?: string;
+    dims: { width: number; height: number };
+    alt: string;
+    /** Drawn over the fitted image (the whole stage in cover mode) while not zoomed. */
+    overlay?: (width: number, height: number) => ReactNode;
+    errorMessage?: string;
+  }
+>(function ImageStage(
+  {
+    imageKey,
+    fullUrl,
+    thumbUrl,
+    dims,
+    alt,
+    overlay,
+    errorMessage = "This image could not be displayed. The stored file may be damaged.",
+    fitMode,
+    className = "",
+    onSwipe,
+    onTap,
+    onZoomChange,
+    allowPageScroll,
+    focusAreas,
+    showFocus,
+  },
   handle,
 ) {
   const [ref, size] = useSize<HTMLDivElement>();
-  const thumbUrl = useAssetUrl(assignmentId, image.thumbnail);
-  const fullUrl = useAssetUrl(assignmentId, image.asset);
   const [loadedUrl, setLoadedUrl] = useState<string>();
   const [failedUrl, setFailedUrl] = useState<string>();
   const [zoom, setZoom] = useState<Zoom>(IDENTITY);
-  const dims = image.assetDimensions ?? image.dimensions ?? { width: 3, height: 2 };
   const base = fitRect(size, dims, fitMode);
   const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
   const actualSize = base.width ? dims.width / (base.width * dpr) : 1;
@@ -123,7 +180,7 @@ export const PhotoStage = forwardRef<
     });
   }, []);
 
-  useEffect(() => setZoom(IDENTITY), [image.id, fitMode]);
+  useEffect(() => setZoom(IDENTITY), [imageKey, fitMode]);
   useEffect(() => apply((z) => z), [apply, size.width, size.height]);
   useEffect(() => onZoomChange?.({ scale: zoom.scale, actualSize }), [onZoomChange, zoom.scale, actualSize]);
 
@@ -272,7 +329,7 @@ export const PhotoStage = forwardRef<
           key={fullUrl}
           className={`stage-img ${full ? "" : "stage-loading"}`}
           src={fullUrl}
-          alt={image.user.caption || image.originalFilename}
+          alt={alt}
           draggable={false}
           decoding="async"
           onLoad={() => setLoadedUrl(fullUrl)}
@@ -280,15 +337,36 @@ export const PhotoStage = forwardRef<
           style={rectStyle(rect)}
         />
       ) : null}
-      {fullUrl && failedUrl === fullUrl ? <p className="stage-error">This image could not be displayed. The stored file may be damaged.</p> : null}
-      {showOverlay && !zoomed && overlayRect.width > 0 ? (
+      {fullUrl && failedUrl === fullUrl ? <p className="stage-error">{errorMessage}</p> : null}
+      {showFocus && focusAreas?.length && rect.width > 0 ? <FocusLayer areas={focusAreas} rect={rect} /> : null}
+      {overlay && !zoomed && overlayRect.width > 0 ? (
         <div className="overlay-host" style={rectStyle(overlayRect)}>
-          <OverlayCanvas image={image} settings={overlay} width={overlayRect.width} height={overlayRect.height} minScale={minOverlayScale} />
+          {overlay(overlayRect.width, overlayRect.height)}
         </div>
       ) : null}
     </div>
   );
 });
+
+/** Corner brackets where the camera focused. Lives in image coordinates, so it follows zoom and pan. */
+function FocusLayer({ areas, rect }: { areas: FocusArea[]; rect: Rect }) {
+  return (
+    <div className="focus-layer" style={rectStyle(rect)} aria-hidden="true" data-testid="focus-layer">
+      {areas.map((a, i) => (
+        <span
+          key={i}
+          className="focus-box"
+          style={{
+            left: `${(a.x + a.width / 2) * 100}%`,
+            top: `${(a.y + a.height / 2) * 100}%`,
+            width: `max(${a.width * 100}%, 18px)`,
+            height: `max(${a.height * 100}%, 18px)`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 function rectStyle(r: Rect) {
   return { left: r.x, top: r.y, width: r.width, height: r.height };

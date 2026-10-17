@@ -17,7 +17,9 @@ const zoomKeys: Shortcut[] = [
   { keys: ["0"], action: "Fit to screen" },
 ];
 
-/** Every keyboard shortcut in the app. The key handlers in Editor and Present must match this list. */
+const focusKey: Shortcut = { keys: ["A"], action: "Focus point on / off (where the camera focused)" };
+
+/** Every keyboard shortcut in the app. The key handlers in Editor, Present and Viewer must match this list. */
 export function shortcutGroups(): ShortcutGroup[] {
   return [
     {
@@ -25,6 +27,7 @@ export function shortcutGroups(): ShortcutGroup[] {
       items: [
         { keys: ["←", "→"], action: "Previous / next photo (↑ ↓ also work)" },
         ...zoomKeys,
+        focusKey,
         { keys: ["R"], action: "Review mode on / off" },
         { keys: ["I"], action: "Choose what shows on the photo" },
         { keys: ["V"], action: "Camera data horizontal / vertical" },
@@ -38,11 +41,26 @@ export function shortcutGroups(): ShortcutGroup[] {
         { keys: ["←", "→"], action: "Previous / next photo" },
         { keys: ["Home", "End"], action: "First / last photo" },
         ...zoomKeys,
+        focusKey,
         { keys: ["O"], action: "Overlay on / off" },
         { keys: ["I"], action: "Choose what shows on the photo" },
         { keys: ["V"], action: "Camera data horizontal / vertical" },
         { keys: ["F"], action: "Fullscreen on / off" },
         { keys: ["Esc"], action: "Fit to screen, then leave the presentation" },
+        { keys: ["?"], action: "Show keyboard shortcuts" },
+      ],
+    },
+    {
+      title: "Viewing a folder",
+      items: [
+        { keys: ["←", "→"], action: "Previous / next photo in the folder (↑ ↓ also work)" },
+        { keys: ["Home", "End"], action: "First / last photo" },
+        ...zoomKeys,
+        focusKey,
+        { keys: ["O"], action: "Camera data on / off" },
+        { keys: ["V"], action: "Camera data horizontal / vertical" },
+        { keys: ["F"], action: "Fullscreen on / off" },
+        { keys: ["Esc"], action: "Fit to screen, then leave fullscreen" },
         { keys: ["?"], action: "Show keyboard shortcuts" },
       ],
     },

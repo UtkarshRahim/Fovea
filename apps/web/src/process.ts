@@ -5,6 +5,7 @@ import {
   extensionOf,
   largestEmbeddedJpeg,
   newImageId,
+  nikonFocusTags,
   normalizeTags,
   rawImageSize,
   sha256Hex,
@@ -25,7 +26,7 @@ export interface ProcessedFile {
 export class ProcessError extends Error {}
 
 /** `rawSize` is set for RAW files: their ImageWidth/ImageHeight usually describe a thumbnail, so it replaces them. */
-async function readMetadata(file: Blob, rawSize?: { width: number; height: number } | null): Promise<CameraMetadata> {
+export async function readMetadata(file: Blob, rawSize?: { width: number; height: number } | null): Promise<CameraMetadata> {
   try {
     const tags = await exifr.parse(file, {
       tiff: true,
@@ -44,9 +45,32 @@ async function readMetadata(file: Blob, rawSize?: { width: number; height: numbe
       delete tags.ImageHeight;
       if (rawSize) Object.assign(tags, { ImageWidth: rawSize.width, ImageHeight: rawSize.height });
     }
+    if (/^nikon/i.test(String(tags.Make ?? ""))) Object.assign(tags, await nikonMakerNoteTags(file));
     return normalizeTags(tags as Record<string, unknown>);
   } catch {
     return {};
+  }
+}
+
+/** AF-area tags from a Nikon maker note. exifr only returns the raw note when given a buffer, not a Blob. */
+async function nikonMakerNoteTags(file: Blob): Promise<Record<string, unknown> | null> {
+  try {
+    const head = await file.slice(0, 2 * 1024 * 1024).arrayBuffer();
+    const parsed = await exifr.parse(head, {
+      tiff: false,
+      exif: true,
+      gps: false,
+      ifd1: false,
+      interop: false,
+      makerNote: true,
+      translateValues: false,
+      reviveValues: false,
+      mergeOutput: false,
+    });
+    const note: unknown = parsed?.makerNote;
+    return note instanceof Uint8Array ? nikonFocusTags(note) : null;
+  } catch {
+    return null;
   }
 }
 

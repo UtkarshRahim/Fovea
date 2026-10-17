@@ -72,6 +72,9 @@ The JSON Schema is in [`framenote.schema.json`](framenote.schema.json). It is ge
 - `presentation.overlay.direction` is `horizontal` (camera data side by side, wrapping into rows) or `vertical` (one
   field per line). It was added after version 1 shipped; a missing value means `horizontal`, and older readers
   ignore it.
+- `focusAreas` (optional, at most 32) lists where the camera focused, each as `{ "x", "y", "width", "height" }` in
+  fractions (0–1) of the upright stored asset, from its top-left corner. Readers may draw them or ignore them. It was
+  added after version 1 shipped; older readers ignore it.
 - `asset` and `thumbnail` are paths, not derived from `id`. Replacing a photo's image keeps its `id`, `order`,
   `user` and `comments` and points it at new asset files, so readers must always follow the paths.
 - `comments` can be written by anyone using the app. `author` is optional free text, not an identity.

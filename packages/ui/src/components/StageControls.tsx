@@ -1,6 +1,18 @@
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Focus, ZoomIn, ZoomOut } from "lucide-react";
 import { zoomLabel, type ZoomInfo } from "./PhotoStage";
 import { IconButton } from "./primitives";
+
+export interface FocusToggle {
+  on: boolean;
+  /** Whether the current photo recorded a focus point. */
+  available: boolean;
+  onToggle: () => void;
+}
+
+export function focusLabel(f: FocusToggle): string {
+  if (f.on && !f.available) return "Hide focus point (A). None recorded for this photo";
+  return f.on ? "Hide focus point (A)" : "Show focus point (A)";
+}
 
 export function StageControls({
   index,
@@ -9,6 +21,7 @@ export function StageControls({
   zoom,
   onZoomBy,
   onResetZoom,
+  focus,
 }: {
   index: number;
   count: number;
@@ -16,6 +29,7 @@ export function StageControls({
   zoom: ZoomInfo;
   onZoomBy: (factor: number) => void;
   onResetZoom: () => void;
+  focus?: FocusToggle;
 }) {
   const zoomed = zoom.scale > 1.01;
   return (
@@ -39,6 +53,19 @@ export function StageControls({
       <IconButton label="Zoom in (+)" onClick={() => onZoomBy(1.5)}>
         <ZoomIn size={17} />
       </IconButton>
+      {focus ? (
+        <>
+          <span className="stage-controls-sep" aria-hidden="true" />
+          <IconButton
+            label={focusLabel(focus)}
+            aria-pressed={focus.on}
+            className={`focus-toggle ${focus.on && !focus.available ? "is-unavailable" : ""}`}
+            onClick={focus.onToggle}
+          >
+            <Focus size={17} />
+          </IconButton>
+        </>
+      ) : null}
     </div>
   );
 }

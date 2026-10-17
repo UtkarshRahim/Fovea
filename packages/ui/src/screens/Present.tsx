@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, SlidersHorizontal, Type, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Focus, Maximize, Minimize, SlidersHorizontal, Type, X } from "lucide-react";
 import { sortedImages, type Manifest } from "@framenote/core";
 import { usePlatform } from "../platform";
 import { useAutosave } from "../hooks/useAutosave";
@@ -10,6 +10,8 @@ import { PhotoStage, zoomLabel, type PhotoStageHandle, type ZoomInfo } from "../
 import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { Button, IconButton } from "../components/primitives";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
+import { focusLabel } from "../components/StageControls";
+import { useFocusPoints } from "../hooks/useFocusPoints";
 import { describeError } from "./Library";
 
 const HINT_KEY = "framenote.presentHintSeen";
@@ -54,6 +56,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
   const [hint, setHint] = useState(() => !localStorage.getItem(HINT_KEY));
   const [shortcuts, setShortcuts] = useState(false);
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
+  const [showFocus, toggleFocus] = useFocusPoints();
   const stage = useRef<PhotoStageHandle>(null);
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const image = images[i];
@@ -178,6 +181,10 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         case "I":
           setPicker((v) => !v);
           break;
+        case "a":
+        case "A":
+          toggleFocus();
+          break;
         case "v":
         case "V":
           update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
@@ -211,7 +218,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts, update]);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts, update, toggleFocus]);
 
   const toggleControls = useCallback(() => {
     // A touch screen has no keyboard, so a tap is the only way back to the controls in fullscreen.
@@ -251,6 +258,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         onSwipe={swipe}
         onTap={toggleControls}
         onZoomChange={setZoom}
+        showFocus={showFocus}
       />
 
       <div className="present-counter mono" aria-live="polite">
@@ -273,6 +281,14 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
             </IconButton>
             <IconButton label="Show on photo (I)" onClick={() => setPicker((v) => !v)} className="on-photo" aria-pressed={picker}>
               <SlidersHorizontal size={18} />
+            </IconButton>
+            <IconButton
+              label={focusLabel({ on: showFocus, available: !!image.focusAreas?.length, onToggle: toggleFocus })}
+              onClick={toggleFocus}
+              className="on-photo"
+              aria-pressed={showFocus}
+            >
+              <Focus size={18} />
             </IconButton>
             <ShortcutsButton onClick={() => setShortcuts(true)} className="on-photo" />
             <IconButton label={fullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"} onClick={() => void toggleFullscreen()} className="on-photo">

@@ -6,9 +6,9 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
   return (
     <Dialog open={open} onOpenChange={onOpenChange} title="Keyboard shortcuts" wide>
       <div className="dialog-body shortcuts">
-        {shortcutGroups().map((g) => (
-          <section key={g.title} aria-labelledby={`sc-${g.title}`}>
-            <h3 id={`sc-${g.title}`} className="section-title">
+        {shortcutGroups().map((g, i) => (
+          <section key={g.title} aria-labelledby={`sc-${i}`}>
+            <h3 id={`sc-${i}`} className="section-title">
               {g.title}
             </h3>
             <dl className="shortcut-list">

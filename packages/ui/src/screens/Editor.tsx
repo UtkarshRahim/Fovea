@@ -25,6 +25,7 @@ import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { ExportBundleDialog, ExportImageDialog } from "../components/ExportDialogs";
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
+import { useFocusPoints } from "../hooks/useFocusPoints";
 import { describeError, TitleDialog } from "./Library";
 
 export function Editor({ id, imageId }: { id: string; imageId?: string }) {
@@ -89,6 +90,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
   const [removing, setRemoving] = useState<string | null>(null);
   const [author, setAuthor] = useState(() => localStorage.getItem(AUTHOR_KEY) ?? "");
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
+  const [showFocus, toggleFocus] = useFocusPoints();
   const stage = useRef<PhotoStageHandle>(null);
   const aid = manifest.assignmentId;
   const commentCount = useMemo(() => images.reduce((n, i) => n + i.comments.length, 0), [images]);
@@ -184,6 +186,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       else if (key === "i") setPicker(true);
       else if (key === "v") update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
       else if (key === "p" && images.length) void present();
+      else if (key === "a") toggleFocus();
       else if (e.key === "+" || e.key === "=") stage.current?.zoomBy(1.5);
       else if (e.key === "-" || e.key === "_") stage.current?.zoomBy(1 / 1.5);
       else if (e.key === "0") stage.current?.resetZoom();
@@ -193,7 +196,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo, images.length, selectedIndex, picker, shortcuts, present, update]);
+  }, [goTo, images.length, selectedIndex, picker, shortcuts, present, update, toggleFocus]);
 
   const addButtons = (
     <>
@@ -280,6 +283,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                 onSwipe={(d) => goTo(selectedIndex + d)}
                 onZoomChange={setZoom}
                 allowPageScroll={review}
+                showFocus={showFocus}
               />
               <StageControls
                 index={selectedIndex}
@@ -288,6 +292,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                 zoom={zoom}
                 onZoomBy={(f) => stage.current?.zoomBy(f)}
                 onResetZoom={() => stage.current?.resetZoom()}
+                focus={{ on: showFocus, available: !!selected.focusAreas?.length, onToggle: toggleFocus }}
               />
             </>
           ) : (

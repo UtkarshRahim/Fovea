@@ -64,6 +64,12 @@ export const UserNotesSchema = z.object({
 });
 export type UserNotes = z.infer<typeof UserNotesSchema>;
 
+const fraction = z.number().min(0).max(1);
+
+/** Where the camera focused, on the upright image, as fractions of its width and height. Points have zero size. */
+export const FocusAreaSchema = z.object({ x: fraction, y: fraction, width: fraction, height: fraction });
+export type FocusArea = z.infer<typeof FocusAreaSchema>;
+
 export const CameraMetadataSchema = z.object({
   camera: z.object({ make: z.string().optional(), model: z.string().optional() }).optional(),
   lens: z.object({ make: z.string().optional(), model: z.string().optional() }).optional(),
@@ -80,6 +86,7 @@ export const CameraMetadataSchema = z.object({
   dimensions: Dimensions.optional(),
   orientation: z.number().int().min(1).max(8).optional(),
   gps: z.object({ latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) }).optional(),
+  focusAreas: z.array(FocusAreaSchema).max(32).optional(),
   rawMetadata: z.record(z.string(), z.unknown()).optional(),
 });
 export type CameraMetadata = z.infer<typeof CameraMetadataSchema>;

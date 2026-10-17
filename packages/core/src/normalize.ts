@@ -1,3 +1,4 @@
+import { FOCUS_EXIFTOOL_TAGS, focusAreasFromTags } from "./focus";
 import type { CameraMetadata } from "./manifest";
 
 type Tags = Record<string, unknown>;
@@ -106,6 +107,9 @@ export function normalizeTags(tags: Tags): CameraMetadata {
     if (!(signedLat === 0 && signedLon === 0)) meta.gps = { latitude: signedLat, longitude: signedLon };
   }
 
+  const focusAreas = focusAreasFromTags(tags);
+  if (focusAreas.length) meta.focusAreas = focusAreas;
+
   const raw: Record<string, unknown> = {};
   for (const k of ["LensID", "LensType", "Lens", "LensInfo", "SerialNumber", "Software"]) {
     const v = tags[k];
@@ -140,4 +144,5 @@ export const EXIFTOOL_TAGS = [
   "SerialNumber",
   "Software",
   "MIMEType",
+  ...FOCUS_EXIFTOOL_TAGS,
 ];

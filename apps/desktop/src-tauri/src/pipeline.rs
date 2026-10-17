@@ -16,6 +16,8 @@ use crate::preview::largest_embedded_jpeg;
 
 pub const RAW_EXTENSIONS: &[&str] = &["nef", "nrw", "cr2", "cr3", "arw", "srf", "sr2", "dng", "raf", "orf", "rw2", "pef"];
 pub const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "tif", "tiff"];
+/// Part of the preview cache key. Bump it when the cached tags or rendering change so older entries are not reused.
+const CACHE_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Options {
@@ -59,7 +61,7 @@ pub struct ImportResult {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Kind {
+pub(crate) enum Kind {
     Jpeg,
     Png,
     Tiff,
@@ -119,7 +121,7 @@ pub fn cache_key(path: &Path) -> Result<String, String> {
     let meta = fs::metadata(path).map_err(|e| format!("Could not read file: {e}"))?;
     let mtime = meta.modified().ok().and_then(|t| t.duration_since(UNIX_EPOCH).ok()).map(|d| d.as_nanos()).unwrap_or(0);
     let abs = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
-    Ok(sha256_hex(format!("{}|{}|{}", abs.to_string_lossy(), meta.len(), mtime).as_bytes())[..32].to_string())
+    Ok(sha256_hex(format!("{CACHE_VERSION}|{}|{}|{}", abs.to_string_lossy(), meta.len(), mtime).as_bytes())[..32].to_string())
 }
 
 fn new_image_id() -> String {
@@ -176,14 +178,14 @@ fn decode(path: &Path, kind: Kind) -> Result<(DynamicImage, &'static str), Strin
     }
 }
 
-struct Outputs {
-    asset: Vec<u8>,
+pub(crate) struct Outputs {
+    pub(crate) asset: Vec<u8>,
     thumb: Vec<u8>,
     width: u32,
     height: u32,
 }
 
-fn render(path: &Path, kind: Kind, orientation: u8, opts: Options) -> Result<(Outputs, &'static str), String> {
+pub(crate) fn render(path: &Path, kind: Kind, orientation: u8, opts: Options) -> Result<(Outputs, &'static str), String> {
     let (mut img, source) = decode(path, kind)?;
     if let Some(o) = Orientation::from_exif(orientation) {
         img.apply_orientation(o);

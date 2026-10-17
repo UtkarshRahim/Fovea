@@ -3,10 +3,11 @@ mod folder;
 mod pipeline;
 mod preview;
 mod storage;
+mod viewer;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use serde::Serialize;
 use tauri::ipc::{InvokeBody, Request, Response};
@@ -21,6 +22,29 @@ struct AppState {
     cache_dir: PathBuf,
     exiftool: Arc<ExifTool>,
     cancel: Arc<AtomicBool>,
+}
+
+/// Files the OS asked us to open (Finder "Open With", double-click, Explorer) that the UI has not picked up yet.
+#[derive(Default)]
+struct OpenRequests(Mutex<Vec<String>>);
+
+fn queue_open(app: &AppHandle, paths: Vec<String>) {
+    if paths.is_empty() {
+        return;
+    }
+    if let Some(q) = app.try_state::<OpenRequests>() {
+        q.0.lock().map(|mut v| v.extend(paths)).ok();
+    }
+    let _ = app.emit("open-requested", ());
+    if let Some(w) = app.get_webview_window("main") {
+        let _ = w.unminimize();
+        let _ = w.set_focus();
+    }
+}
+
+/// Command-line arguments that are files (Windows and Linux pass opened files this way).
+fn file_args(args: impl IntoIterator<Item = String>) -> Vec<String> {
+    args.into_iter().filter(|a| !a.starts_with('-') && std::path::Path::new(a).is_file()).collect()
 }
 
 #[derive(Serialize)]
@@ -181,10 +205,38 @@ fn cancel_import(state: State<'_, AppState>) {
     state.cancel.store(true, Ordering::Relaxed);
 }
 
+#[tauri::command]
+fn take_open_requests(requests: State<'_, OpenRequests>) -> Vec<String> {
+    requests.0.lock().map(|mut v| std::mem::take(&mut *v)).unwrap_or_default()
+}
+
+#[tauri::command]
+async fn viewer_list(path: String) -> Result<viewer::ViewerFolder, String> {
+    tauri::async_runtime::spawn_blocking(move || viewer::list(&PathBuf::from(path))).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn viewer_image(state: State<'_, AppState>, folder: String, name: String) -> Result<Response, String> {
+    let et = state.exiftool.clone();
+    let path = viewer::join(&folder, &name)?;
+    tauri::async_runtime::spawn_blocking(move || viewer::image(&path, &et).map(Response::new)).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn viewer_tags(state: State<'_, AppState>, folder: String, name: String) -> Result<serde_json::Value, String> {
+    let et = state.exiftool.clone();
+    let path = viewer::join(&folder, &name)?;
+    tauri::async_runtime::spawn_blocking(move || viewer::tags(&path, &et)).await.map_err(|e| e.to_string())?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(any(windows, target_os = "linux"))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| queue_open(app, file_args(argv.into_iter().skip(1)))));
+    let app = builder
         .plugin(tauri_plugin_dialog::init())
+        .manage(OpenRequests(Mutex::new(file_args(std::env::args().skip(1)))))
         .setup(|app| {
             let data = app.path().app_data_dir()?;
             let root = data.join("assignments");
@@ -216,10 +268,21 @@ pub fn run() {
             list_folder,
             read_folder_file,
             import_images,
-            cancel_import
+            cancel_import,
+            take_open_requests,
+            viewer_list,
+            viewer_image,
+            viewer_tags
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Frame Note");
+        .build(tauri::generate_context!())
+        .expect("error while building Frame Note");
+    app.run(|_app, _event| {
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Opened { urls } = _event {
+            let paths = urls.into_iter().filter_map(|u| u.to_file_path().ok()).map(|p| p.to_string_lossy().into_owned()).collect();
+            queue_open(_app, paths);
+        }
+    });
 }
 
 #[cfg(test)]

@@ -78,6 +78,26 @@ Found and fixed:
   server. On a fresh `pnpm dev:desktop` it imported "Sal Forest Test (imported)" with 4 photos.
 - **Picking the `assets` folder gave a confusing error.** The message now says to choose the folder one level up.
 
+### Focus points and the folder viewer (2026-10-17, macOS, web build in Chromium)
+
+Automated: core 116 passed (focus areas per brand, DX crop, orientations 6 and 8, Nikon maker-note parsing,
+orientation header), ui 31 passed (viewer navigation, preloading, recents, the `A` toggle, adding to a project in
+the right order). Desktop TypeScript typechecks. `cargo test` and a desktop run were not possible locally: this
+machine has Rust 1.88 and the locked Tauri 2.12 needs 1.90.
+
+Manually, in the web viewer with Nikon Z8 and Z9 NEFs and a Canon JPEG: photos dropped on the projects screen open
+in Finder order; NEF embedded previews show upright for orientations 1, 6 and 8 without re-encoding; with `A` on,
+the focus brackets sit on the bee-eater (Z8, landscape), the langur's head (Z8, orientation 8) and between the
+tiger's eyes (Z9, DX crop, orientation 6), matching ExifTool's AF values exactly; `O` shows camera data; "New project
+from all 3 photos" and "Add to project" import with focus data kept.
+
+Found and fixed:
+
+- **NEFs showed "could not be displayed".** Chromium's `img.decode()` rejected large previews that load fine. The
+  viewer now falls back to `onload` and drops failed entries so they can be retried.
+- **Photos added from the viewer were blank in the project.** Loading the project after the import garbage-collected
+  the new files. The project is now loaded first; a UI test pins the order.
+
 Not yet tested: real macOS and Windows machines, Android Chrome, iOS Safari (iPhone and iPad), offline use after
 first load on a phone, memory with 100-image projects. Performance targets (cold start, navigation latency, import
 throughput, peak memory) have not been measured yet.

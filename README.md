@@ -51,9 +51,12 @@ Windows instructions are under [Opening the unsigned apps](#opening-the-unsigned
 | Export image with overlay (JPEG/PNG) | ✓ | ✓ (downscaled to the 16 MP canvas limit on phones) |
 | Export / import `.framenote` | ✓ | ✓ (share sheet on phones) |
 | Import an unzipped `.framenote` folder | ✓ | ✓ desktop browsers and Android; not iPhone/iPad (import the `.framenote` instead) |
+| Focus point (`A`): where the camera focused, as subtle corner brackets | ✓ Nikon, Canon, Sony, Fujifilm, OM/Olympus, Panasonic, phones | ✓ Nikon Z bodies and phones |
+| View a folder without a project (`#/view`): open one photo, step through every photo next to it | ✓ any format, "Open With" from Finder/Explorer | ✓ files you pick or drop; whole folders in Chrome/Edge |
+| Recent folders (remembered by path or folder permission; photos are never copied) | ✓ | ✓ Chrome/Edge |
 
-**Not yet:** full RAW decoding for files with no usable embedded preview, HEIC, video, and automatic phone ↔ desktop
-sync (sync is by hand with `.framenote` files; see `docs/SYNC.md`).
+**Not yet:** full RAW decoding for files with no usable embedded preview, HEIC in browsers other than Safari, video,
+and automatic phone ↔ desktop sync (sync is by hand with `.framenote` files; see `docs/SYNC.md`).
 
 **View and review.** A project opens in view mode: the photo, a thumbnail strip and a small control bar. Notes,
 comments, camera data, reordering and export live behind the **Review** button (or `R`); the app remembers which mode

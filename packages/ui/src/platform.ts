@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { AssignmentSummary, ImageEntry, ImportWarning, Manifest } from "@framenote/core";
+import type { AssignmentSummary, CameraMetadata, ImageEntry, ImportWarning, Manifest } from "@framenote/core";
 
 export interface ImportProgress {
   done: number;
@@ -34,6 +34,67 @@ export interface StorageInfo {
 export interface ImportedFramenote {
   manifest: Manifest;
   warnings: ImportWarning[];
+}
+
+export interface FolderPhoto {
+  name: string;
+  size: number;
+  modifiedMs: number;
+}
+
+/** Photos viewed where they are, without copying them into a project. */
+export interface PhotoFolder {
+  /** Stable across sessions where the platform can reopen the folder (the path on desktop). */
+  id: string;
+  name: string;
+  /** Full folder path, where the platform has one. */
+  path?: string;
+  photos: FolderPhoto[];
+  /** Index of the photo to show first. */
+  start: number;
+  /** False for a one-off selection the platform cannot reopen later (e.g. files picked in a browser without folder access). */
+  reopenable: boolean;
+}
+
+/** A folder remembered by reference (a path or a browser folder handle), never by copying its photos. */
+export interface RecentFolder {
+  id: string;
+  name: string;
+  path?: string;
+  lastPhoto?: string;
+  openedAt: string;
+}
+
+export interface ViewablePhoto {
+  /** Bytes the browser can display. */
+  blob: Blob;
+  /** "embedded-preview" for RAW files, "converted" when the app re-encoded the file, otherwise "original". */
+  source: "original" | "embedded-preview" | "converted";
+}
+
+export type OpenRequest =
+  | { kind: "folder"; folder: PhotoFolder }
+  | { kind: "project"; imported: ImportedFramenote }
+  | { kind: "error"; message: string };
+
+export interface FolderViewer {
+  /** Picks photos. Desktop opens the whole folder of the chosen photo; browsers show the files that were picked. */
+  pickPhotos(): Promise<PhotoFolder | null>;
+  /** Picks a folder and opens every photo in it. Absent where the browser cannot pick folders. */
+  pickFolder?(): Promise<PhotoFolder | null>;
+  /** Photos dropped onto the window (browsers only; the desktop app receives paths instead). */
+  openFiles?(files: File[]): Promise<PhotoFolder | null>;
+  /** Re-reads the folder; null if it is gone or access was refused. */
+  openRecent(r: RecentFolder): Promise<PhotoFolder | null>;
+  recents(): Promise<RecentFolder[]>;
+  remember(folder: PhotoFolder, photo: string): Promise<void>;
+  forget(id: string): Promise<void>;
+  loadPhoto(folder: PhotoFolder, photo: FolderPhoto): Promise<ViewablePhoto>;
+  loadMetadata(folder: PhotoFolder, photo: FolderPhoto): Promise<CameraMetadata>;
+  /** Imports photos from the folder into a project's stored assets (the same pipeline as Add photos). */
+  addToProject(assignmentId: string, folder: PhotoFolder, photos: FolderPhoto[], onProgress: (p: ImportProgress) => void): Promise<AddImagesResult>;
+  /** Files the operating system asked the app to open. Returns an unsubscribe function. */
+  onOpenRequest?(cb: (r: OpenRequest) => void): () => void;
 }
 
 /** The UI depends only on this interface. Web uses IndexedDB, desktop uses Tauri commands. */
@@ -73,6 +134,7 @@ export interface Platform {
   storageInfo?(): Promise<StorageInfo | null>;
   /** Maximum canvas pixels this device can safely render. */
   maxCanvasPixels: number;
+  viewer?: FolderViewer;
 }
 
 const PlatformContext = createContext<Platform | null>(null);

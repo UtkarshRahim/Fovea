@@ -26,6 +26,9 @@ hex = "0.4"
 rayon = "1"
 uuid = { version = "1", features = ["v4"] }
 
+[target.'cfg(any(windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2"
+
 [dev-dependencies]
 tempfile = "3"
 

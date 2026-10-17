@@ -82,6 +82,22 @@ export function findEmbeddedJpegs(data: Uint8Array, maxCandidates = 16): Embedde
   return found;
 }
 
+/**
+ * JPEG start-of-image plus an EXIF block that only carries `orientation`. Put it in front of an embedded preview
+ * (minus the preview's own first two bytes) and browsers display the preview upright without re-encoding it.
+ * Mirrors `with_orientation` in the desktop app's viewer.rs.
+ */
+export function orientationHeader(orientation: number): Uint8Array {
+  return new Uint8Array([
+    0xff, 0xd8, 0xff, 0xe1, 0x00, 0x22,
+    0x45, 0x78, 0x69, 0x66, 0x00, 0x00,
+    0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x08,
+    0x00, 0x01, 0x01, 0x12, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01,
+    0x00, orientation & 0xff, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+  ]);
+}
+
 export function largestEmbeddedJpeg(data: Uint8Array): EmbeddedJpeg | null {
   let best: EmbeddedJpeg | null = null;
   for (const j of findEmbeddedJpegs(data)) {

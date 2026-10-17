@@ -55,6 +55,17 @@ Short record of implementation choices and their trade-offs. Newest at the botto
   and SubIFDs for the largest full-resolution image, which matches ExifTool on desktop. Sizes smaller than the stored
   asset are not shown, which hides wrong values saved by older versions.
 
+- **Focus areas** are normalised to fractions of the upright image at import (`focusAreasFromTags`), so drawing them
+  needs no camera knowledge. Per brand: Nikon AFArea X/Y/Width/Height in AFImage pixels, mapped through
+  `CropHiSpeed` for DX and aspect crops; Canon AFInfo2 points relative to the centre (Y up on EOS bodies, down on
+  compacts), keeping the points in focus; Sony `FocusLocation`; Fujifilm `FocusPixel`; OM/Olympus
+  `AFPointSelected`; Panasonic `AFPointPosition`; EXIF `SubjectArea` otherwise. EXIF orientation is applied last.
+  Areas whose centre falls outside the frame are dropped rather than clamped onto the edge.
+- **Nikon focus in the browser.** exifr does not decode maker notes, so `nikonFocusTags` reads the AFInfo2 block
+  (versions 0300 and 0400–0402, all Z bodies) and `CropHiSpeed` from the raw note and returns ExifTool tag names.
+  exifr only returns the raw note when given a buffer, so the first 2 MB are read separately. Other brands are
+  desktop-only for now.
+
 ## RAW
 
 - **Embedded preview first, on both platforms.** A scanner finds every complete baseline/progressive JPEG inside the
@@ -115,3 +126,24 @@ Short record of implementation choices and their trade-offs. Newest at the botto
   `__MACOSX` or other files, or lost some. Unreferenced files are ignored and images with missing files are dropped,
   each with a warning. Path safety, size limits and checksums are the same as for `.framenote` files. On desktop the
   folder is listed and read by Rust commands that refuse paths outside the chosen folder and skip symlinks.
+
+## Folder viewer
+
+- **Separate from projects, with a bridge.** `#/view` shows a folder in place: nothing is imported, and it never
+  appears as a project. "Add to project" and "New project from all N photos" run the normal import pipeline, so
+  projects stay self-contained and shareable.
+- **References, not copies.** Recent folders store the path (desktop, `localStorage`) or a File System Access
+  directory handle (Chrome/Edge, IndexedDB `folders` store, DB version 2). Reopening asks for permission again if
+  the browser dropped it. Other browsers view picked or dropped files for the session only.
+- **Display without converting.** Formats the webview decodes are shown as-is (HEIC/TIFF on macOS too). RAW shows
+  the largest embedded JPEG; for rotated frames a minimal EXIF orientation segment is prepended
+  (`orientationHeader` / `with_orientation`) so the webview rotates it, instead of decoding and re-encoding 45 MP.
+  TIFF on Windows/Linux is rendered once through the import pipeline.
+- **One photo opens its folder; several photos open just those**, as Preview does. Lists are sorted like Finder
+  (natural order) and capped at 20,000 files. The viewer keeps eight decoded photos and preloads the next two and
+  the previous one.
+- **Open With.** File associations use role Viewer and rank Alternate, so Frame Note is offered but never takes over
+  as the default. macOS delivers files through `RunEvent::Opened`; Windows and Linux through argv and the
+  single-instance plugin, which forwards to the running window.
+- **Projects are loaded before importing into them**, because loading a project deletes stored files its manifest
+  does not list yet.

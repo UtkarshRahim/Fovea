@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 export type Route =
   | { name: "library" }
   | { name: "editor"; id: string; image?: string }
-  | { name: "present"; id: string; index: number; mode: "present" | "preview" };
+  | { name: "present"; id: string; index: number; mode: "present" | "preview" }
+  | { name: "viewer" };
 
 export function parseRoute(hash: string): Route {
   const [path = "", query = ""] = hash.replace(/^#/, "").split("?");
   const params = new URLSearchParams(query);
   const parts = path.split("/").filter(Boolean);
+  if (parts[0] === "view") return { name: "viewer" };
   if (parts[0] === "a" && parts[1]) {
     const id = decodeURIComponent(parts[1]);
     if (parts[2] === "present") {
@@ -29,6 +31,8 @@ export function routeHref(r: Route): string {
       return `#/a/${encodeURIComponent(r.id)}${r.image ? `?image=${encodeURIComponent(r.image)}` : ""}`;
     case "present":
       return `#/a/${encodeURIComponent(r.id)}/present?i=${r.index}&mode=${r.mode}`;
+    case "viewer":
+      return "#/view";
   }
 }
 

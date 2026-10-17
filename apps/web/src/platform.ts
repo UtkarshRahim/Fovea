@@ -13,12 +13,14 @@ import {
   type Manifest,
   type UnpackedFramenote,
 } from "@framenote/core";
-import type { AddImagesResult, ImportProgress, Platform, SavedFile } from "@framenote/ui";
+import type { AddImagesResult, FolderViewer, ImportProgress, Platform, SavedFile } from "@framenote/ui";
 import { ACCEPT_IMAGES, processFile } from "./process";
+import { WebViewer, type FolderRecord } from "./viewer";
 
 interface FramenoteDB extends DBSchema {
   assignments: { key: string; value: Manifest };
   assets: { key: string; value: Blob };
+  folders: { key: string; value: FolderRecord };
 }
 
 const assetKey = (assignmentId: string, path: string) => `${assignmentId}/${path}`;
@@ -91,16 +93,32 @@ export class WebPlatform implements Platform {
   kind = "web" as const;
   capabilities = { rawImport: false, folderImport: false, projectFolderImport: supportsFolderPicker(), nativeFullscreen: typeof document !== "undefined" && !!document.fullscreenEnabled };
   maxCanvasPixels = isMobile() ? SAFE_CANVAS_PIXELS : 64_000_000;
+  viewer: FolderViewer;
   private db: Promise<IDBPDatabase<FramenoteDB>>;
   private cancelled = false;
 
   constructor(dbName = "framenote") {
-    this.db = openDB<FramenoteDB>(dbName, 1, {
-      upgrade(db) {
-        db.createObjectStore("assignments");
-        db.createObjectStore("assets");
+    this.db = openDB<FramenoteDB>(dbName, 2, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore("assignments");
+          db.createObjectStore("assets");
+        }
+        if (oldVersion < 2) db.createObjectStore("folders");
       },
     });
+    const folders = {
+      all: async () => (await this.db).getAll("folders"),
+      get: async (id: string) => (await this.db).get("folders", id),
+      put: async (r: FolderRecord) => void (await (await this.db).put("folders", r, r.id)),
+      delete: async (id: string) => (await this.db).delete("folders", id),
+    };
+    this.viewer = new WebViewer(
+      folders,
+      (accept, mode) => (mode === "folder" ? pickFolder() : pickFiles(accept, true)),
+      (id, files, onProgress) => this.addDroppedFiles(id, files, onProgress),
+      supportsFolderPicker(),
+    );
   }
 
   private async requestPersistence() {

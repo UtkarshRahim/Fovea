@@ -5,6 +5,8 @@ export * from "./folder";
 export * from "./checksum";
 export * from "./format";
 export * from "./normalize";
+export * from "./focus";
+export * from "./nikonMakerNote";
 export * from "./overlay";
 export * from "./rawPreview";
 export * from "./assignment";

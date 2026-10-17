@@ -84,6 +84,26 @@ A project opens in **view mode**: the photograph, a thumbnail strip along the bo
 You can zoom to twice the stored image's actual pixels. Imported photographs are stored at up to 4096 px, so 100%
 means 100% of that copy, not of the original RAW file.
 
+- **Focus point:** press `A`, or the focus button at the end of the control bar, to show where the camera focused as
+  small corner brackets. It is off until you turn it on, and the choice is remembered on this device for the editor,
+  presentations and the folder viewer. Photos without recorded focus data show nothing (the button dims). The
+  desktop app reads focus data from Nikon, Canon, Sony, Fujifilm, OM/Olympus and Panasonic files; the browser reads
+  it from Nikon Z cameras and phones.
+
+### Look through a folder without making a project
+
+Frame Note can also stand in for Preview or Photos when you just want to look. Choose **Open → Photo…** (or
+**Folder…**) on the projects screen, drop photos onto it, or in the desktop app right-click a photo in Finder or
+Explorer and choose **Open With → Frame Note**. Every photo in that folder opens in order, whatever the format: RAW,
+JPEG, HEIC, TIFF, PNG, WebP and more. RAW files show the camera's full-size embedded preview straight away.
+
+The same keys work as in a project (`←` `→`, `Home` `End`, zoom, `A` for focus, `F` fullscreen), plus `O` for camera
+data and `V` to stack it vertically. Nothing is copied or changed. Recent folders appear on the projects screen;
+Frame Note remembers only where they are (the path on desktop, the folder permission in Chrome and Edge).
+
+When a photo is worth keeping, use **Add to project** to copy it into an existing or new project, or **New project
+from all N photos** to bring the whole folder in for captioning and presenting.
+
 ## 5. Review mode: captions, species and location
 
 Click **Review** (or press `R`) when you want to work on the project rather than just look at it. Frame Note
@@ -230,6 +250,7 @@ Press `?`, or click the keyboard button in the top bar, to see every shortcut. O
 | `←` `→` | Previous / next photograph (`↑` `↓` too) | Previous / next photograph |
 | `Home` `End` | | First / last photograph |
 | `+` `−` `0` | Zoom in / out / fit | Zoom in / out / fit |
+| `A` | Focus point on / off | Focus point on / off |
 | `R` | Review mode on / off | |
 | `I` | Show on photo | Show on photo |
 | `V` | Camera data horizontal / vertical | Camera data horizontal / vertical |
@@ -239,11 +260,14 @@ Press `?`, or click the keyboard button in the top bar, to see every shortcut. O
 | `Esc` | | Fit to screen, then leave |
 | `?` | Keyboard shortcuts | Keyboard shortcuts |
 
+The folder viewer uses the presentation keys, with `A` for focus, `O` for camera data and `V` to stack it.
+
 ## 14. Where your photographs are kept
 
 Nothing leaves your device. There are no accounts, uploads or analytics.
 
 - **Desktop app:** in the app's data folder on your computer.
+- **Folder viewer:** photos stay where they are. Frame Note remembers only recent folder locations.
 - **Browser:** in that browser's storage on that device. The projects list shows how much space is in use.
   Browsers can clear stored data, so treat an exported `.framenote` as your backup.
 
