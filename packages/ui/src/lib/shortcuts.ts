@@ -32,6 +32,7 @@ export function shortcutGroups(): ShortcutGroup[] {
         { keys: ["I"], action: "Choose what shows on the photo" },
         { keys: ["V"], action: "Camera data horizontal / vertical" },
         { keys: ["P"], action: "Present" },
+        { keys: ["Delete"], action: "Remove this photo from the project" },
         { keys: ["?"], action: "Show keyboard shortcuts" },
       ],
     },

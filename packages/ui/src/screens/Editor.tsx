@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Download, FolderOpen, ImagePlus, MessageSquareText, MonitorPlay, Package, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Download, FolderOpen, ImagePlus, MessageSquareText, MonitorPlay, Package, SlidersHorizontal, Trash2 } from "lucide-react";
 import {
   addComment,
   appendImages,
@@ -178,7 +178,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTypingTarget(e.target) || hasModifier(e) || picker || shortcuts) return;
+      if (isTypingTarget(e.target) || hasModifier(e) || picker || shortcuts || removing) return;
       const key = e.key.toLowerCase();
       if (e.key === "ArrowDown" || e.key === "ArrowRight") goTo(selectedIndex + 1);
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") goTo(selectedIndex - 1);
@@ -187,6 +187,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       else if (key === "v") update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
       else if (key === "p" && images.length) void present();
       else if (key === "a") toggleFocus();
+      else if ((e.key === "Delete" || e.key === "Backspace") && selected) setRemoving(selected.id);
       else if (e.key === "+" || e.key === "=") stage.current?.zoomBy(1.5);
       else if (e.key === "-" || e.key === "_") stage.current?.zoomBy(1 / 1.5);
       else if (e.key === "0") stage.current?.resetZoom();
@@ -196,7 +197,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo, images.length, selectedIndex, picker, shortcuts, present, update, toggleFocus]);
+  }, [goTo, images.length, selectedIndex, selected, picker, shortcuts, removing, present, update, toggleFocus]);
 
   const addButtons = (
     <>
@@ -239,6 +240,11 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                 <Package size={16} /> <span className="hide-sm">Export .framenote</span>
               </Button>
             </>
+          ) : null}
+          {selected ? (
+            <IconButton label="Remove this photo (Delete)" onClick={() => setRemoving(selected.id)}>
+              <Trash2 size={16} />
+            </IconButton>
           ) : null}
           <Button aria-pressed={review} className="review-toggle" onClick={() => setReview((v) => !v)} title="Review mode: notes, comments and camera data (R)">
             <MessageSquareText size={16} /> Review
@@ -365,8 +371,8 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       <ConfirmDialog
         open={!!removing}
         onOpenChange={(o) => !o && setRemoving(null)}
-        title="Remove this image from the project?"
-        description="The original file on your device is not touched."
+        title="Remove this photo from the project?"
+        description={`${images.find((i) => i.id === removing)?.originalFilename ?? "This photo"}, with its caption and comments, is removed from the project. The original file on your device is not touched.`}
         confirmLabel="Remove"
         onConfirm={() => {
           if (!removing) return;

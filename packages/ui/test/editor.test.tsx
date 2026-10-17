@@ -103,6 +103,33 @@ describe("editor", () => {
     await waitFor(() => expect(store.get(manifest.assignmentId)!.images.find((i) => i.id === firstId)!.order).toBe(1), { timeout: 2000 });
   });
 
+  it("removes the current photo from view mode with Delete or the top-bar button, after confirming", async () => {
+    localStorage.setItem("framenote.reviewMode", "0");
+    const manifest = sampleManifest(3);
+    const [first, second, third] = manifest.images;
+    const { platform, store } = fakePlatform([manifest]);
+    location.hash = `#/a/${manifest.assignmentId}`;
+    render(<App platform={platform} />);
+    const user = userEvent.setup();
+    const ids = () => store.get(manifest.assignmentId)!.images.map((i) => i.id);
+
+    await screen.findByRole("button", { name: "Remove this photo (Delete)" });
+    await user.keyboard("{Delete}");
+    expect(await screen.findByRole("dialog", { name: "Remove this photo from the project?" })).toHaveTextContent(first!.originalFilename);
+    await user.keyboard("{ArrowRight}");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByText(/1 \/ 3/)).toBeInTheDocument();
+
+    await user.keyboard("{Delete}");
+    await user.click(await screen.findByRole("button", { name: "Remove" }));
+    await waitFor(() => expect(ids()).toEqual([second!.id, third!.id]), { timeout: 2000 });
+    expect(screen.getByText(/1 \/ 2/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Remove this photo (Delete)" }));
+    await user.click(await screen.findByRole("button", { name: "Remove" }));
+    await waitFor(() => expect(ids()).toEqual([third!.id]), { timeout: 2000 });
+  });
+
   it("replaces a photo's image and camera data but keeps its notes and comments", async () => {
     let manifest = sampleManifest(2);
     const target = manifest.images[0]!;

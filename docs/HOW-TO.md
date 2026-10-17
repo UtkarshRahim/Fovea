@@ -115,7 +115,8 @@ Review mode adds:
 
 - **The filmstrip on the left.** Drag a photograph by its handle (⠿), or use the ▲ ▼ buttons, to change the order.
   The order is the order of the slideshow. The bin icon removes a photograph from the project; the original file is
-  not touched.
+  not touched. You can also remove the photograph you're looking at in either mode with the bin button in the top
+  bar or the `Delete` key, after a confirmation.
 - **Your notes on the right.** A **Caption**, the **Species** and the **Location** for each photograph. They appear
   on the photo during the presentation.
 - **Project notes** at the bottom of the panel: the brief, or what you want reviewers to look at.
@@ -255,6 +256,7 @@ Press `?`, or click the keyboard button in the top bar, to see every shortcut. O
 | `I` | Show on photo | Show on photo |
 | `V` | Camera data horizontal / vertical | Camera data horizontal / vertical |
 | `P` | Present | |
+| `Delete` | Remove this photograph (asks first) | |
 | `O` | | Overlay on / off |
 | `F` | | Fullscreen on / off |
 | `Esc` | | Fit to screen, then leave |
