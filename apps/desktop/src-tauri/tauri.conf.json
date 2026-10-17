@@ -34,7 +34,7 @@
     "active": true,
     "targets": ["app", "dmg", "nsis"],
     "category": "Photography",
-    "shortDescription": "Present and review wildlife photographs",
+    "shortDescription": "Present and review photographs",
     "longDescription": "Fovea opens camera RAW and JPEG files, shows their original camera data, lets you caption and present them fullscreen, and packages projects into portable .fovea files.",
     "copyright": "© 2026 Utkarsh Rahim. MIT License.",
     "license": "MIT",

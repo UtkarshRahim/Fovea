@@ -8,6 +8,8 @@
   "scripts": {
     "dev:web": "pnpm --filter @fovea/web dev",
     "dev:desktop": "pnpm --filter @fovea/desktop tauri dev",
+    "dev:site": "pnpm --filter @fovea/site dev",
+    "build:site": "pnpm --filter @fovea/site build:with-app",
     "build:web": "pnpm --filter @fovea/web build",
     "build:desktop": "pnpm --filter @fovea/desktop tauri build",
     "fetch:exiftool": "node scripts/fetch-exiftool.mjs",

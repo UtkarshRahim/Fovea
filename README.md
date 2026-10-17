@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-A local-first presentation and review tool for wildlife photographers.
+A local-first presentation and review tool for photographers.
 
 Open a folder of camera RAW files, see the original camera data, caption each photograph, present fullscreen with a
 clean metadata overlay, and hand the whole project to someone else as one `.fovea` file. They open it on a Mac,

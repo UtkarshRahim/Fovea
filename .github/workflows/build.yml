@@ -1,6 +1,6 @@
 name: Build and deploy
 
-# - Push to main: run the tests and refresh the web app on GitHub Pages.
+# - Push to main: run the tests, refresh the web app on GitHub Pages, and deploy the website to Cloudflare Pages.
 # - Push a tag like v0.1.0: build the .dmg and .exe and publish them as release v0.1.0.
 # - Actions tab → "Build and deploy" → Run workflow: pick what to build. Desktop builds are published as a new
 #   public release each time (v0.1.0-build.<run number>).
@@ -65,6 +65,34 @@ jobs:
         with: { path: apps/web/dist }
       - id: deploy
         uses: actions/deploy-pages@v4
+
+  # The website and the web app (under /app/) on Cloudflare Pages. Needs the CLOUDFLARE_API_TOKEN and
+  # CLOUDFLARE_ACCOUNT_ID secrets on the github-pages environment; without them this job does nothing.
+  site:
+    needs: test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.web)
+    runs-on: ubuntu-latest
+    environment: github-pages
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.CLOUDFLARE_API_TOKEN != ''
+      - uses: pnpm/action-setup@v4
+        if: env.CLOUDFLARE_API_TOKEN != ''
+      - uses: actions/setup-node@v4
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        with: { node-version: 22, cache: pnpm }
+      - if: env.CLOUDFLARE_API_TOKEN != ''
+        run: pnpm install --frozen-lockfile
+      - name: Build site and web app
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: pnpm build:site
+      - name: Deploy to Cloudflare Pages
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        working-directory: apps/site
+        run: npx -y wrangler@4 pages deploy dist --project-name fovea --branch main
 
   desktop:
     needs: test

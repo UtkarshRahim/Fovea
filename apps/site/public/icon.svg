@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Fovea</title>
+  <style>
+    .ink { stroke: #F2EEE3; }
+    .pupil { fill: #0F1512; }
+    @media (prefers-color-scheme: light) {
+      .ink { stroke: #17211C; }
+      .pupil { fill: #17211C; }
+    }
+  </style>
+  <g class="ink" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 76V42a10 10 0 0 1 10-10H76"/>
+    <path d="M180 32H214a10 10 0 0 1 10 10V76"/>
+    <path d="M224 180V214a10 10 0 0 1-10 10H180"/>
+    <path d="M76 224H42a10 10 0 0 1-10-10V180"/>
+  </g>
+  <circle cx="128" cy="128" r="40" fill="none" stroke="#E8A33D" stroke-width="12"/>
+  <circle class="pupil" cx="128" cy="128" r="18"/>
+  <circle cx="121" cy="121" r="5" fill="#F2EEE3"/>
+</svg>

@@ -16,7 +16,7 @@ export default defineConfig({
       manifest: {
         name: "Fovea",
         short_name: "Fovea",
-        description: "Present and review wildlife photographs with their camera data.",
+        description: "Present and review photographs with their camera data.",
         theme_color: "#151515",
         background_color: "#151515",
         display: "standalone",
