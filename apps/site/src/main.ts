@@ -7,7 +7,7 @@ import "@fontsource/ibm-plex-mono/500.css";
 import "./style.css";
 
 const REPO = "UtkarshRahim/Fovea";
-const APP_URL = import.meta.env.VITE_APP_URL ?? (import.meta.env.DEV ? "https://utkarshrahim.github.io/Fovea/" : "/app/");
+const APP_URL = import.meta.env.VITE_APP_URL ?? (import.meta.env.DEV ? "https://fovea-483.pages.dev/app/" : `${import.meta.env.BASE_URL}app/`);
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
