@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { exportFilename, exportSize, type ImageEntry, type ImageExportOptions, type Manifest } from "@framenote/core";
+import { exportFilename, exportSize, type ImageEntry, type ImageExportOptions, type Manifest } from "@fovea/core";
 import { usePlatform } from "../platform";
 import { renderExport } from "../lib/draw";
 import { Button, Checkbox, Dialog, Segmented, Slider } from "./primitives";
@@ -132,7 +132,7 @@ export function ExportBundleDialog({
     setBusy(true);
     setError(undefined);
     try {
-      const saved = await platform.exportFramenote(manifest, { stripGps: !includeGps });
+      const saved = await platform.exportFovea(manifest, { stripGps: !includeGps });
       if (saved) {
         onDone(`Saved ${manifest.images.length} images to ${saved.location}.`);
         onOpenChange(false);
@@ -148,7 +148,7 @@ export function ExportBundleDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Export .framenote"
+      title="Export .fovea"
       description="One portable file with every image, caption, comment and presentation setting. Opens on any computer or phone browser without the RAW files."
       footer={
         <>

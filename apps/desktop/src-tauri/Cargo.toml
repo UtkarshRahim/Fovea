@@ -1,14 +1,14 @@
 [package]
-name = "framenote"
+name = "fovea"
 version = "0.1.0"
-description = "Frame Note — presentation and review for wildlife photographers"
+description = "Fovea — presentation and review for wildlife photographers"
 authors = ["Utkarsh Rahim"]
 license = "MIT"
 edition = "2021"
 rust-version = "1.80"
 
 [lib]
-name = "framenote_lib"
+name = "fovea_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

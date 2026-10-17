@@ -22,7 +22,7 @@ function Routes() {
   }
 }
 
-/** Photos and .framenote files the operating system asked us to open (double-click, Open With). */
+/** Photos and .fovea files the operating system asked us to open (double-click, Open With). */
 function OpenRequests() {
   const platform = usePlatform();
   const toast = useToast();

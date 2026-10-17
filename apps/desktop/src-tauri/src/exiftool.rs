@@ -25,7 +25,7 @@ pub struct Launcher {
 }
 
 /// Bundled copy first (macOS: Perl script run by the system Perl; Windows: standalone exe),
-/// then `FRAMENOTE_EXIFTOOL`, then `exiftool` on PATH.
+/// then `FOVEA_EXIFTOOL`, then `exiftool` on PATH.
 pub fn locate(resource_dir: Option<&Path>) -> Option<Launcher> {
     if let Some(dir) = resource_dir {
         let root = dir.join("exiftool");
@@ -42,8 +42,8 @@ pub fn locate(resource_dir: Option<&Path>) -> Option<Launcher> {
             });
         }
     }
-    if let Ok(p) = std::env::var("FRAMENOTE_EXIFTOOL") {
-        return Some(Launcher { program: PathBuf::from(p), prefix_args: vec![], description: "ExifTool from FRAMENOTE_EXIFTOOL".into() });
+    if let Ok(p) = std::env::var("FOVEA_EXIFTOOL") {
+        return Some(Launcher { program: PathBuf::from(p), prefix_args: vec![], description: "ExifTool from FOVEA_EXIFTOOL".into() });
     }
     let name = if cfg!(windows) { "exiftool.exe" } else { "exiftool" };
     std::env::var_os("PATH").and_then(|paths| {

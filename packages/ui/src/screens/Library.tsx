@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, FileArchive, FileUp, FolderInput, Plus } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
-import { FramenoteError, type AssignmentSummary } from "@framenote/core";
-import type { ImportedFramenote } from "../platform";
+import { FoveaError, type AssignmentSummary } from "@fovea/core";
+import type { ImportedFovea } from "../platform";
 import { usePlatform, type StorageInfo } from "../platform";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { navigate } from "../lib/router";
@@ -14,9 +14,9 @@ import { isTypingTarget } from "../lib/keys";
 import { openInViewer } from "../lib/viewerSession";
 
 export function describeError(e: unknown): string {
-  if (e instanceof FramenoteError) return e.details?.length ? `${e.message} (${e.details.slice(0, 3).join("; ")})` : e.message;
+  if (e instanceof FoveaError) return e.details?.length ? `${e.message} (${e.details.slice(0, 3).join("; ")})` : e.message;
   if (e instanceof DOMException && e.name === "QuotaExceededError") {
-    return "This device is out of browser storage. Export projects as .framenote files and delete ones you no longer need.";
+    return "This device is out of browser storage. Export projects as .fovea files and delete ones you no longer need.";
   }
   return e instanceof Error ? e.message : String(e);
 }
@@ -63,7 +63,7 @@ export function Library() {
     void refresh();
   }, [refresh]);
 
-  const runImport = async (pick: () => Promise<ImportedFramenote | null>) => {
+  const runImport = async (pick: () => Promise<ImportedFovea | null>) => {
     setImporting(true);
     try {
       const res = await pick();
@@ -77,7 +77,7 @@ export function Library() {
       setImporting(false);
     }
   };
-  const doImport = (file?: File) => runImport(() => platform.importFramenote(file));
+  const doImport = (file?: File) => runImport(() => platform.importFovea(file));
   const importFolder = () => runImport(() => platform.importProjectFolder());
 
   const importButton = (
@@ -87,7 +87,7 @@ export function Library() {
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
-    const file = files.find((f) => f.name.toLowerCase().endsWith(".framenote"));
+    const file = files.find((f) => f.name.toLowerCase().endsWith(".fovea"));
     if (file) void doImport(file);
     else if (files.length && platform.viewer?.openFiles) {
       platform.viewer
@@ -102,7 +102,7 @@ export function Library() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
-          <h1>Frame Note</h1>
+          <h1>Fovea</h1>
         </div>
         <div className="topbar-actions">
           <ShortcutsButton onClick={() => setShortcuts(true)} />
@@ -130,7 +130,7 @@ export function Library() {
             <p>
               Create a project and add photographs
               {platform.capabilities.rawImport ? " — RAW files (NEF, CR2, CR3, ARW), JPEG or TIFF" : " — JPEG, or RAW files using their embedded preview"}.
-              Or import a <span className="mono">.framenote</span> file someone shared with you
+              Or import a <span className="mono">.fovea</span> file someone shared with you
               {platform.capabilities.projectFolderImport ? ", or a folder you unzipped from one" : ""}.
             </p>
             <div className="empty-actions">
@@ -150,7 +150,7 @@ export function Library() {
         <RecentFolders />
         <footer className="library-foot small muted">
           Photographs stay on this {platform.kind === "web" ? "device, in this browser" : "computer"}. Nothing is uploaded.
-          {platform.kind === "web" ? " Browsers can clear stored data — export a .framenote as your backup." : ""}
+          {platform.kind === "web" ? " Browsers can clear stored data — export a .fovea as your backup." : ""}
           {storage ? (
             <>
               {" "}
@@ -293,7 +293,7 @@ function ImportMenu({ importing, folder, onFile, onFolder }: { importing: boolea
   if (!folder) {
     return (
       <Button onClick={onFile} disabled={importing}>
-        <FileUp size={16} /> {importing ? "Importing…" : "Import .framenote"}
+        <FileUp size={16} /> {importing ? "Importing…" : "Import .fovea"}
       </Button>
     );
   }
@@ -311,7 +311,7 @@ function ImportMenu({ importing, folder, onFile, onFolder }: { importing: boolea
               <FileArchive size={14} />
             </span>
             <span className="menu-text">
-              .framenote file
+              .fovea file
               <span className="menu-sub">A project someone shared with you</span>
             </span>
           </DropdownMenu.Item>

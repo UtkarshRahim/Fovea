@@ -1,4 +1,4 @@
-//! Reading an unzipped .framenote folder the user picked.
+//! Reading an unzipped .fovea folder the user picked.
 
 use std::fs;
 use std::path::{Component, Path, PathBuf};

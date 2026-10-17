@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { AssignmentSummary, CameraMetadata, ImageEntry, ImportWarning, Manifest } from "@framenote/core";
+import type { AssignmentSummary, CameraMetadata, ImageEntry, ImportWarning, Manifest } from "@fovea/core";
 
 export interface ImportProgress {
   done: number;
@@ -31,7 +31,7 @@ export interface StorageInfo {
   persisted: boolean;
 }
 
-export interface ImportedFramenote {
+export interface ImportedFovea {
   manifest: Manifest;
   warnings: ImportWarning[];
 }
@@ -74,7 +74,7 @@ export interface ViewablePhoto {
 
 export type OpenRequest =
   | { kind: "folder"; folder: PhotoFolder }
-  | { kind: "project"; imported: ImportedFramenote }
+  | { kind: "project"; imported: ImportedFovea }
   | { kind: "error"; message: string };
 
 export interface FolderViewer {
@@ -122,11 +122,11 @@ export interface Platform {
   addDroppedFiles?(assignmentId: string, files: File[], onProgress: (p: ImportProgress) => void): Promise<AddImagesResult>;
   cancelAddImages(): void;
 
-  /** Picks a .framenote file, validates and stores it. Returns null if cancelled. */
-  importFramenote(file?: File): Promise<ImportedFramenote | null>;
-  /** Picks an unzipped .framenote folder (manifest.json + assets/) and stores it as a project. Returns null if cancelled. */
-  importProjectFolder(): Promise<ImportedFramenote | null>;
-  exportFramenote(m: Manifest, opts: { stripGps: boolean }): Promise<SavedFile | null>;
+  /** Picks a .fovea file, validates and stores it. Returns null if cancelled. */
+  importFovea(file?: File): Promise<ImportedFovea | null>;
+  /** Picks an unzipped .fovea folder (manifest.json + assets/) and stores it as a project. Returns null if cancelled. */
+  importProjectFolder(): Promise<ImportedFovea | null>;
+  exportFovea(m: Manifest, opts: { stripGps: boolean }): Promise<SavedFile | null>;
   saveExportedImage(data: Blob, filename: string): Promise<SavedFile | null>;
 
   setFullscreen(on: boolean): Promise<void>;

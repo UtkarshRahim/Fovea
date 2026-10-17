@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Frame Note",
+  "productName": "Fovea",
   "version": "0.1.0",
-  "identifier": "com.utkarshrahim.framenote",
+  "identifier": "com.utkarshrahim.fovea",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:43219",
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Frame Note",
+        "title": "Fovea",
         "width": 1360,
         "height": 860,
         "minWidth": 900,
@@ -35,19 +35,19 @@
     "targets": ["app", "dmg", "nsis"],
     "category": "Photography",
     "shortDescription": "Present and review wildlife photographs",
-    "longDescription": "Frame Note opens camera RAW and JPEG files, shows their original camera data, lets you caption and present them fullscreen, and packages projects into portable .framenote files.",
+    "longDescription": "Fovea opens camera RAW and JPEG files, shows their original camera data, lets you caption and present them fullscreen, and packages projects into portable .fovea files.",
     "copyright": "© 2026 Utkarsh Rahim. MIT License.",
     "license": "MIT",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "resources": { "resources/exiftool/": "exiftool/" },
     "fileAssociations": [
       {
-        "ext": ["framenote"],
-        "name": "Frame Note project",
-        "description": "Frame Note project",
+        "ext": ["fovea"],
+        "name": "Fovea project",
+        "description": "Fovea project",
         "role": "Editor",
         "rank": "Owner",
-        "mimeType": "application/x-framenote"
+        "mimeType": "application/x-fovea"
       },
       {
         "ext": ["jpg", "jpeg", "jpe", "png", "gif", "webp", "avif", "bmp", "tif", "tiff", "heic", "heif"],

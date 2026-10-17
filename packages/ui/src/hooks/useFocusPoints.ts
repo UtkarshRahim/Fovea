@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
-const KEY = "framenote.showFocus";
-const EVENT = "framenote:focus-toggle";
+const KEY = "fovea.showFocus";
+const EVENT = "fovea:focus-toggle";
 
 /** Whether focus points are drawn. Off by default; one setting shared by every screen and remembered between sessions. */
 export function useFocusPoints(): [boolean, () => void] {

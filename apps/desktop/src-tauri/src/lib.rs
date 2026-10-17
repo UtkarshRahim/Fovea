@@ -142,11 +142,11 @@ fn read_asset(state: State<'_, AppState>, id: String, path: String) -> Result<Re
     Ok(Response::new(state.store.read_asset(&id, &path)?))
 }
 
-/// Reads a file the user picked in an open dialog (used for .framenote import).
+/// Reads a file the user picked in an open dialog (used for .fovea import).
 #[tauri::command]
 async fn read_file(path: String) -> Result<Response, String> {
-    if !path.to_lowercase().ends_with(".framenote") && !path.to_lowercase().ends_with(".zip") {
-        return Err("Only .framenote files can be opened here.".into());
+    if !path.to_lowercase().ends_with(".fovea") && !path.to_lowercase().ends_with(".zip") {
+        return Err("Only .fovea files can be opened here.".into());
     }
     tauri::async_runtime::spawn_blocking(move || std::fs::read(&path).map(Response::new).map_err(|e| format!("Could not read the file: {e}")))
         .await
@@ -158,7 +158,7 @@ async fn read_file(path: String) -> Result<Response, String> {
 fn write_file(request: Request<'_>) -> Result<(), String> {
     let path = header(&request, "x-path")?;
     let lower = path.to_lowercase();
-    if ![".framenote", ".jpg", ".jpeg", ".png"].iter().any(|e| lower.ends_with(e)) {
+    if ![".fovea", ".jpg", ".jpeg", ".png"].iter().any(|e| lower.ends_with(e)) {
         return Err("Refused to write a file with an unexpected extension.".into());
     }
     std::fs::write(&path, raw_body(&request)?).map_err(|e| format!("Could not save the file: {e}"))
@@ -275,7 +275,7 @@ pub fn run() {
             viewer_tags
         ])
         .build(tauri::generate_context!())
-        .expect("error while building Frame Note");
+        .expect("error while building Fovea");
     app.run(|_app, _event| {
         #[cfg(target_os = "macos")]
         if let tauri::RunEvent::Opened { urls } = _event {

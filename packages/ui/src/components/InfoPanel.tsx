@@ -13,7 +13,7 @@ import {
   type Comment,
   type ImageEntry,
   type UserNotes,
-} from "@framenote/core";
+} from "@fovea/core";
 import { Button, IconButton } from "./primitives";
 
 const SOURCE_LABEL: Record<ImageEntry["assetSource"], string> = {

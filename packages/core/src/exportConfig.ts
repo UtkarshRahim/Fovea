@@ -36,10 +36,10 @@ export function exportSize(
 
 export function exportFilename(originalFilename: string, format: "jpeg" | "png"): string {
   const base = originalFilename.replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9._ -]+/g, "_") || "image";
-  return `${base}-framenote.${format === "jpeg" ? "jpg" : "png"}`;
+  return `${base}-fovea.${format === "jpeg" ? "jpg" : "png"}`;
 }
 
 export function safeBundleFilename(title: string): string {
   const base = title.replace(/[^A-Za-z0-9._ -]+/g, "_").trim().slice(0, 80) || "project";
-  return `${base}.framenote`;
+  return `${base}.fovea`;
 }

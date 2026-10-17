@@ -2,22 +2,22 @@ import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import {
   APP_VERSION,
   createManifest,
-  packFramenote,
+  packFovea,
   parseManifest,
   resolveImportCollision,
   safeBundleFilename,
   SAFE_CANVAS_PIXELS,
   summarize,
   unpackFolder,
-  unpackFramenote,
+  unpackFovea,
   type Manifest,
-  type UnpackedFramenote,
-} from "@framenote/core";
-import type { AddImagesResult, FolderViewer, ImportProgress, Platform, SavedFile } from "@framenote/ui";
+  type UnpackedFovea,
+} from "@fovea/core";
+import type { AddImagesResult, FolderViewer, ImportProgress, Platform, SavedFile } from "@fovea/ui";
 import { ACCEPT_IMAGES, processFile } from "./process";
 import { WebViewer, type FolderRecord } from "./viewer";
 
-interface FramenoteDB extends DBSchema {
+interface FoveaDB extends DBSchema {
   assignments: { key: string; value: Manifest };
   assets: { key: string; value: Blob };
   folders: { key: string; value: FolderRecord };
@@ -94,11 +94,11 @@ export class WebPlatform implements Platform {
   capabilities = { rawImport: false, folderImport: false, projectFolderImport: supportsFolderPicker(), nativeFullscreen: typeof document !== "undefined" && !!document.fullscreenEnabled };
   maxCanvasPixels = isMobile() ? SAFE_CANVAS_PIXELS : 64_000_000;
   viewer: FolderViewer;
-  private db: Promise<IDBPDatabase<FramenoteDB>>;
+  private db: Promise<IDBPDatabase<FoveaDB>>;
   private cancelled = false;
 
-  constructor(dbName = "framenote") {
-    this.db = openDB<FramenoteDB>(dbName, 2, {
+  constructor(dbName = "fovea") {
+    this.db = openDB<FoveaDB>(dbName, 2, {
       upgrade(db, oldVersion) {
         if (oldVersion < 1) {
           db.createObjectStore("assignments");
@@ -239,10 +239,10 @@ export class WebPlatform implements Platform {
     this.cancelled = true;
   }
 
-  async importFramenote(file?: File) {
-    const picked = file ?? (await pickFiles(".framenote,application/zip", false))[0];
+  async importFovea(file?: File) {
+    const picked = file ?? (await pickFiles(".fovea,application/zip", false))[0];
     if (!picked) return null;
-    return this.storeUnpacked(await unpackFramenote(new Uint8Array(await picked.arrayBuffer())));
+    return this.storeUnpacked(await unpackFovea(new Uint8Array(await picked.arrayBuffer())));
   }
 
   async importProjectFolder() {
@@ -258,7 +258,7 @@ export class WebPlatform implements Platform {
     return this.storeUnpacked(unpacked);
   }
 
-  private async storeUnpacked(unpacked: UnpackedFramenote) {
+  private async storeUnpacked(unpacked: UnpackedFovea) {
     const db = await this.db;
     const existing = await db.getAllKeys("assignments");
     const manifest = resolveImportCollision(unpacked.manifest, existing);
@@ -272,8 +272,8 @@ export class WebPlatform implements Platform {
     return { manifest, warnings: unpacked.warnings };
   }
 
-  async exportFramenote(m: Manifest, opts: { stripGps: boolean }) {
-    const bytes = await packFramenote(m, (p) => this.readAsset(m.assignmentId, p), {
+  async exportFovea(m: Manifest, opts: { stripGps: boolean }) {
+    const bytes = await packFovea(m, (p) => this.readAsset(m.assignmentId, p), {
       stripGps: opts.stripGps,
       appVersion: APP_VERSION,
       platform: "web",

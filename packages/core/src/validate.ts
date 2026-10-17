@@ -7,11 +7,11 @@ import {
   type Manifest,
 } from "./manifest";
 
-export class FramenoteError extends Error {
+export class FoveaError extends Error {
   constructor(
     message: string,
     readonly code:
-      | "not-a-framenote"
+      | "not-a-fovea"
       | "unsupported-version"
       | "invalid-manifest"
       | "unsupported-entry-type"
@@ -22,7 +22,7 @@ export class FramenoteError extends Error {
     readonly details?: string[],
   ) {
     super(message);
-    this.name = "FramenoteError";
+    this.name = "FoveaError";
   }
 }
 
@@ -36,7 +36,7 @@ export function migrate(manifest: Record<string, unknown>, fromVersion: number):
   for (let v = fromVersion; v < CURRENT_FORMAT_VERSION; v++) {
     const step = migrations[v];
     if (!step) {
-      throw new FramenoteError(
+      throw new FoveaError(
         `No migration path from format version ${v} to ${v + 1}.`,
         "unsupported-version",
       );
@@ -53,25 +53,25 @@ function formatIssues(error: z.ZodError): string[] {
 /** Validates an untrusted manifest object, migrating older versions. */
 export function parseManifest(input: unknown): Manifest {
   if (typeof input !== "object" || input === null || Array.isArray(input)) {
-    throw new FramenoteError("manifest.json is not a JSON object.", "invalid-manifest");
+    throw new FoveaError("manifest.json is not a JSON object.", "invalid-manifest");
   }
   const raw = input as Record<string, unknown>;
   if (raw.format !== FORMAT_NAME) {
-    throw new FramenoteError(
-      `This is not a Frame Note file (format field is ${JSON.stringify(raw.format ?? null)}, expected "${FORMAT_NAME}").`,
-      "not-a-framenote",
+    throw new FoveaError(
+      `This is not a Fovea file (format field is ${JSON.stringify(raw.format ?? null)}, expected "${FORMAT_NAME}").`,
+      "not-a-fovea",
     );
   }
   const version = raw.formatVersion;
   if (typeof version !== "number" || !Number.isInteger(version) || version < 1) {
-    throw new FramenoteError(
+    throw new FoveaError(
       `The file has an invalid formatVersion (${JSON.stringify(version ?? null)}). Supported: ${SUPPORTED_FORMAT_VERSIONS.join(", ")}.`,
       "unsupported-version",
     );
   }
   if (version > CURRENT_FORMAT_VERSION) {
-    throw new FramenoteError(
-      `This file uses format version ${version}, but this app supports up to version ${CURRENT_FORMAT_VERSION}. Update Frame Note to open it.`,
+    throw new FoveaError(
+      `This file uses format version ${version}, but this app supports up to version ${CURRENT_FORMAT_VERSION}. Update Fovea to open it.`,
       "unsupported-version",
     );
   }
@@ -82,13 +82,13 @@ export function parseManifest(input: unknown): Manifest {
     images.forEach((img, i) => {
       const type = (img as { type?: unknown } | null)?.type;
       if (type === "video") {
-        throw new FramenoteError(
-          `Item ${i + 1} is a video. Video is reserved for a later version of Frame Note and cannot be opened yet.`,
+        throw new FoveaError(
+          `Item ${i + 1} is a video. Video is reserved for a later version of Fovea and cannot be opened yet.`,
           "unsupported-entry-type",
         );
       }
       if (type !== "image") {
-        throw new FramenoteError(
+        throw new FoveaError(
           `Item ${i + 1} has an unknown type ${JSON.stringify(type ?? null)}. Only "image" is supported.`,
           "unsupported-entry-type",
         );
@@ -98,12 +98,12 @@ export function parseManifest(input: unknown): Manifest {
 
   const result = ManifestSchema.safeParse(migrated);
   if (!result.success) {
-    throw new FramenoteError("manifest.json does not match the Frame Note format.", "invalid-manifest", formatIssues(result.error));
+    throw new FoveaError("manifest.json does not match the Fovea format.", "invalid-manifest", formatIssues(result.error));
   }
   const ids = new Set<string>();
   for (const img of result.data.images) {
     if (ids.has(img.id)) {
-      throw new FramenoteError(`Duplicate image id "${img.id}" in manifest.`, "invalid-manifest");
+      throw new FoveaError(`Duplicate image id "${img.id}" in manifest.`, "invalid-manifest");
     }
     ids.add(img.id);
   }

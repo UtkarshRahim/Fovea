@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FramenoteError, ManifestSchema, createManifest, migrations, parseManifest } from "../src";
+import { FoveaError, ManifestSchema, createManifest, migrations, parseManifest } from "../src";
 import { sampleAssignment } from "./helpers";
 
 describe("manifest validation", () => {
@@ -33,7 +33,7 @@ describe("manifest validation", () => {
   });
 
   it("rejects wrong format names", () => {
-    expect(() => parseManifest({ format: "fieldnote", formatVersion: 1 })).toThrow(/not a Frame Note file/);
+    expect(() => parseManifest({ format: "fieldnote", formatVersion: 1 })).toThrow(/not a Fovea file/);
   });
 
   it("reports field-level issues", async () => {
@@ -44,8 +44,8 @@ describe("manifest validation", () => {
       parseManifest(m);
       expect.unreachable();
     } catch (e) {
-      expect(e).toBeInstanceOf(FramenoteError);
-      expect((e as FramenoteError).details?.join("\n")).toMatch(/images\.0\.asset/);
+      expect(e).toBeInstanceOf(FoveaError);
+      expect((e as FoveaError).details?.join("\n")).toMatch(/images\.0\.asset/);
     }
   });
 

@@ -7,19 +7,19 @@ import {
   buildImageEntry,
   createManifest,
   normalizeTags,
-  packFramenote,
+  packFovea,
   parseManifest,
   resolveImportCollision,
   safeBundleFilename,
   summarize,
   unpackFolder,
-  unpackFramenote,
+  unpackFovea,
   type AssetSource,
   type Manifest,
-  type UnpackedFramenote,
-} from "@framenote/core";
-import type { AddImagesResult, FolderPhoto, FolderViewer, ImportProgress, OpenRequest, PhotoFolder, Platform, RecentFolder, ViewablePhoto } from "@framenote/ui";
-import { describeError } from "@framenote/ui";
+  type UnpackedFovea,
+} from "@fovea/core";
+import type { AddImagesResult, FolderPhoto, FolderViewer, ImportProgress, OpenRequest, PhotoFolder, Platform, RecentFolder, ViewablePhoto } from "@fovea/ui";
+import { describeError } from "@fovea/ui";
 
 interface NativeProcessed {
   id: string;
@@ -50,7 +50,7 @@ const RAW = ["nef", "nrw", "cr2", "cr3", "arw", "srf", "sr2", "dng", "raf", "orf
 const RAW_AND_IMAGES = ["nef", "nrw", "cr2", "cr3", "arw", "dng", "raf", "orf", "rw2", "pef", "jpg", "jpeg", "png", "tif", "tiff"];
 const VIEWABLE = [...RAW, "jpg", "jpeg", "jpe", "png", "gif", "webp", "avif", "bmp", "tif", "tiff", "heic", "heif"];
 const MIME: Record<string, string> = { png: "image/png", gif: "image/gif", webp: "image/webp", avif: "image/avif", bmp: "image/bmp", tif: "image/tiff", tiff: "image/tiff", heic: "image/heic", heif: "image/heif" };
-const RECENTS_KEY = "framenote.recentFolders";
+const RECENTS_KEY = "fovea.recentFolders";
 const MAX_RECENTS = 20;
 const isMac = /Mac/.test(navigator.userAgent);
 const enc = encodeURIComponent;
@@ -183,19 +183,19 @@ export class DesktopPlatform implements Platform {
     void invoke("cancel_import");
   }
 
-  async importFramenote() {
-    const path = await open({ multiple: false, title: "Open a .framenote file", filters: [{ name: "Frame Note project", extensions: ["framenote"] }] });
+  async importFovea() {
+    const path = await open({ multiple: false, title: "Open a .fovea file", filters: [{ name: "Fovea project", extensions: ["fovea"] }] });
     if (!path || Array.isArray(path)) return null;
-    return this.importFramenoteAt(path);
+    return this.importFoveaAt(path);
   }
 
-  async importFramenoteAt(path: string) {
+  async importFoveaAt(path: string) {
     const data = bytes(await invoke<ArrayBuffer>("read_file", { path }));
-    return this.storeUnpacked(await unpackFramenote(data));
+    return this.storeUnpacked(await unpackFovea(data));
   }
 
   async importProjectFolder() {
-    const root = await open({ directory: true, multiple: false, title: "Choose an unzipped Frame Note project folder" });
+    const root = await open({ directory: true, multiple: false, title: "Choose an unzipped Fovea project folder" });
     if (!root || Array.isArray(root)) return null;
     const listed = await invoke<{ path: string; size: number }[]>("list_folder", { path: root });
     const unpacked = await unpackFolder(
@@ -208,7 +208,7 @@ export class DesktopPlatform implements Platform {
     return this.storeUnpacked(unpacked);
   }
 
-  private async storeUnpacked(unpacked: UnpackedFramenote) {
+  private async storeUnpacked(unpacked: UnpackedFovea) {
     const existing = (await this.listAssignments()).map((a) => a.id);
     const manifest = resolveImportCollision(unpacked.manifest, existing);
     await this.dir(manifest.assignmentId);
@@ -217,11 +217,11 @@ export class DesktopPlatform implements Platform {
     return { manifest, warnings: unpacked.warnings };
   }
 
-  async exportFramenote(m: Manifest, opts: { stripGps: boolean }) {
-    const path = await save({ defaultPath: safeBundleFilename(m.title), filters: [{ name: "Frame Note project", extensions: ["framenote"] }] });
+  async exportFovea(m: Manifest, opts: { stripGps: boolean }) {
+    const path = await save({ defaultPath: safeBundleFilename(m.title), filters: [{ name: "Fovea project", extensions: ["fovea"] }] });
     if (!path) return null;
-    const target = path.toLowerCase().endsWith(".framenote") ? path : `${path}.framenote`;
-    const data = await packFramenote(m, (p) => this.readAsset(m.assignmentId, p), { stripGps: opts.stripGps, appVersion: APP_VERSION, platform: "desktop" });
+    const target = path.toLowerCase().endsWith(".fovea") ? path : `${path}.fovea`;
+    const data = await packFovea(m, (p) => this.readAsset(m.assignmentId, p), { stripGps: opts.stripGps, appVersion: APP_VERSION, platform: "desktop" });
     await invoke("write_file", data, { headers: { "x-path": enc(target) } });
     return { location: target };
   }
@@ -332,8 +332,8 @@ class DesktopViewer implements FolderViewer {
       const paths = await invoke<string[]>("take_open_requests");
       if (!paths.length) return;
       try {
-        const project = paths.find((p) => p.toLowerCase().endsWith(".framenote"));
-        if (project) cb({ kind: "project", imported: await this.platform.importFramenoteAt(project) });
+        const project = paths.find((p) => p.toLowerCase().endsWith(".fovea"));
+        if (project) cb({ kind: "project", imported: await this.platform.importFoveaAt(project) });
         else cb({ kind: "folder", folder: await this.openPaths(paths) });
       } catch (e) {
         cb({ kind: "error", message: `Could not open ${baseName(paths[0]!)}: ${describeError(e)}` });

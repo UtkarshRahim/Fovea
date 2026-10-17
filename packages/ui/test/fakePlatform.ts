@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { appendImages, buildImageEntry, createManifest, newImageId, summarize, type Manifest } from "@framenote/core";
+import { appendImages, buildImageEntry, createManifest, newImageId, summarize, type Manifest } from "@fovea/core";
 import type { Platform } from "../src/platform";
 
 export function sampleManifest(count = 3): Manifest {
@@ -50,9 +50,9 @@ export function fakePlatform(initial: Manifest[] = []) {
     readAsset: vi.fn(async () => new Uint8Array()),
     addImages: vi.fn(async () => null),
     cancelAddImages: vi.fn(),
-    importFramenote: vi.fn(async () => null),
+    importFovea: vi.fn(async () => null),
     importProjectFolder: vi.fn(async () => null),
-    exportFramenote: vi.fn(async () => ({ location: "downloads" })),
+    exportFovea: vi.fn(async () => ({ location: "downloads" })),
     saveExportedImage: vi.fn(async () => ({ location: "downloads" })),
     setFullscreen: vi.fn(async () => {}),
     isFullscreen: vi.fn(async () => false),

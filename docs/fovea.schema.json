@@ -1,12 +1,12 @@
 {
-  "$id": "https://framenote.app/schema/v1.json",
-  "title": "Frame Note manifest v1",
+  "$id": "https://raw.githubusercontent.com/UtkarshRahim/Fovea/main/docs/fovea.schema.json",
+  "title": "Fovea manifest v1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
     "format": {
       "type": "string",
-      "const": "framenote"
+      "const": "fovea"
     },
     "formatVersion": {
       "type": "number",
@@ -37,7 +37,7 @@
       "properties": {
         "app": {
           "type": "string",
-          "const": "framenote"
+          "const": "fovea"
         },
         "version": {
           "type": "string"

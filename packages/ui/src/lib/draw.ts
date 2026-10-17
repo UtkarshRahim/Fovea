@@ -10,7 +10,7 @@ import {
   type MeasureText,
   type OverlayLayout,
   type OverlaySettings,
-} from "@framenote/core";
+} from "@fovea/core";
 
 type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 

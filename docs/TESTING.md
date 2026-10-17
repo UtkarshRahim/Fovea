@@ -8,8 +8,8 @@ Run on 2026-10-14 on the Linux development VM (Node 22.14, Rust 1.99).
 
 | Suite | Command | Result |
 |---|---|---|
-| core (Vitest) | `pnpm --filter @framenote/core test` | 80 passed (+4 real-RAW tests when `FRAMENOTE_RAW_SAMPLES` is set: 4 passed) |
-| ui (Vitest + RTL, jsdom) | `pnpm --filter @framenote/ui test` | 14 passed |
+| core (Vitest) | `pnpm --filter @fovea/core test` | 80 passed (+4 real-RAW tests when `FOVEA_RAW_SAMPLES` is set: 4 passed) |
+| ui (Vitest + RTL, jsdom) | `pnpm --filter @fovea/ui test` | 14 passed |
 | desktop (cargo test) | `cd apps/desktop/src-tauri && cargo test` | 12 passed |
 | Typecheck | `pnpm typecheck` | clean |
 | Web production build + service worker | `pnpm build:web` | builds; 53 precache entries |
@@ -45,7 +45,7 @@ What they cover:
 ## RAW formats and cameras tested
 
 Samples are from [raw.pixls.us](https://raw.pixls.us/) (CC0). They are not committed because of their size; download
-them into a folder and set `FRAMENOTE_RAW_SAMPLES` to run the fixture test.
+them into a folder and set `FOVEA_RAW_SAMPLES` to run the fixture test.
 
 | Camera | File | Format detail | Embedded preview found | Scanner time (TS, Node) |
 |---|---|---|---|---|
@@ -63,10 +63,10 @@ These are expected to work wherever the camera embeds a baseline JPEG preview, b
 | Date | Device | OS / browser | Scope | Result |
 |---|---|---|---|---|
 | 2026-10-14 | Linux VM (dev host, not a target) | Tauri 2 dev build, WebKitGTK 2.52 | Desktop flow with the four RAW samples | pass after fixes (below) |
-| 2026-10-14 | Linux VM | Chrome, desktop and 390×844 device emulation | Web flow: RAW import, view/review, zoom, shortcuts, `.framenote` export and folder import | pass |
+| 2026-10-14 | Linux VM | Chrome, desktop and 390×844 device emulation | Web flow: RAW import, view/review, zoom, shortcuts, `.fovea` export and folder import | pass |
 
 Desktop, with the Z9 NEF, R7 CR3, 5D4 CR2 and A1 ARW samples: folder import (4 of 4, about 5 s), camera data and
-overlay values match ExifTool, captions autosave, reordering, "Show on photo", presentation shortcuts, `.framenote`
+overlay values match ExifTool, captions autosave, reordering, "Show on photo", presentation shortcuts, `.fovea`
 export (13 MB) and import, unzipped-folder import, view mode, zoom (keys, double-click, Ctrl + wheel, drag to pan),
 drag-to-swipe, Review toggle, project switcher and the shortcuts panel all worked.
 
@@ -74,7 +74,7 @@ Found and fixed:
 
 - **Export image failed with "The operation is insecure."** Drawing the asset-protocol URL tainted the canvas. Export
   now renders from the stored bytes through a `blob:` URL. Re-tested: a 4096 × 2731 JPEG was written.
-- **`.framenote` import appeared to do nothing.** It was run against a stale debug binary started without its dev
+- **`.fovea` import appeared to do nothing.** It was run against a stale debug binary started without its dev
   server. On a fresh `pnpm dev:desktop` it imported "Sal Forest Test (imported)" with 4 photos.
 - **Picking the `assets` folder gave a confusing error.** The message now says to choose the folder one level up.
 

@@ -113,7 +113,7 @@ describe("presentation", () => {
   });
 
   it("shows only the photo in fullscreen while shortcuts keep working", async () => {
-    localStorage.removeItem("framenote.presentHintSeen");
+    localStorage.removeItem("fovea.presentHintSeen");
     const { platform } = setup();
     let fs = false;
     platform.setFullscreen = vi.fn(async (on: boolean) => {

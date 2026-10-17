@@ -10,7 +10,7 @@ import {
   sortedImages,
   updateUserNotes,
   type Manifest,
-} from "@framenote/core";
+} from "@fovea/core";
 import { usePlatform, type AddImagesResult, type ImportProgress } from "../platform";
 import { useAutosave, type SaveStatus } from "../hooks/useAutosave";
 import { navigate } from "../lib/router";
@@ -68,8 +68,8 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
   );
 }
 
-const AUTHOR_KEY = "framenote.commentAuthor";
-const REVIEW_KEY = "framenote.reviewMode";
+const AUTHOR_KEY = "fovea.commentAuthor";
+const REVIEW_KEY = "fovea.reviewMode";
 
 function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string }) {
   const platform = usePlatform();
@@ -236,8 +236,8 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
               <Button variant="ghost" disabled={!selected} onClick={() => setExportImage(true)} title="Export image">
                 <Download size={16} /> <span className="hide-sm">Export image</span>
               </Button>
-              <Button variant="ghost" disabled={!images.length} onClick={() => setExportBundle(true)} title="Export .framenote">
-                <Package size={16} /> <span className="hide-sm">Export .framenote</span>
+              <Button variant="ghost" disabled={!images.length} onClick={() => setExportBundle(true)} title="Export .fovea">
+                <Package size={16} /> <span className="hide-sm">Export .fovea</span>
               </Button>
             </>
           ) : null}

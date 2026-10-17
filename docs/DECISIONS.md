@@ -4,12 +4,12 @@ Short record of implementation choices and their trade-offs. Newest at the botto
 
 ## Product
 
-- **Name and format.** The product is **Frame Note**. Files use the `.framenote` extension and the manifest says
-  `"format": "framenote"`. The original spec called it FIELDNOTE/`.fieldnote`; nothing has shipped under that name.
+- **Name and format.** The product is **Fovea**. Files use the `.fovea` extension and the manifest says
+  `"format": "fovea"`. The original spec called it FIELDNOTE/`.fieldnote`; nothing has shipped under that name.
 - **Desktop first, macOS + Windows.** Linux is not a target. It is only used here as a development host.
-- **Phones use the browser.** No native mobile app. The PWA can open `.framenote` files and RAW files directly (see
+- **Phones use the browser.** No native mobile app. The PWA can open `.fovea` files and RAW files directly (see
   "RAW on phones" below).
-- **Sync is by hand for now.** Moving `.framenote` files around (AirDrop, Files, USB, cloud drive) is the only transport.
+- **Sync is by hand for now.** Moving `.fovea` files around (AirDrop, Files, USB, cloud drive) is the only transport.
   `docs/SYNC.md` keeps the proposal for later.
 - **Anyone can comment.** Each image has `comments[]` with an optional author name and no identity or login. A
   comment-author name is remembered locally for convenience.
@@ -124,7 +124,7 @@ Short record of implementation choices and their trade-offs. Newest at the botto
   Double-tap zooms (it used to toggle fit/fill; fit mode is still in the presentation settings).
 - **Folder import is lenient where ZIP import is strict.** An unzipped folder may have picked up `.DS_Store`,
   `__MACOSX` or other files, or lost some. Unreferenced files are ignored and images with missing files are dropped,
-  each with a warning. Path safety, size limits and checksums are the same as for `.framenote` files. On desktop the
+  each with a warning. Path safety, size limits and checksums are the same as for `.fovea` files. On desktop the
   folder is listed and read by Rust commands that refuse paths outside the chosen folder and skip symlinks.
 
 ## Folder viewer
@@ -142,7 +142,7 @@ Short record of implementation choices and their trade-offs. Newest at the botto
 - **One photo opens its folder; several photos open just those**, as Preview does. Lists are sorted like Finder
   (natural order) and capped at 20,000 files. The viewer keeps eight decoded photos and preloads the next two and
   the previous one.
-- **Open With.** File associations use role Viewer and rank Alternate, so Frame Note is offered but never takes over
+- **Open With.** File associations use role Viewer and rank Alternate, so Fovea is offered but never takes over
   as the default. macOS delivers files through `RunEvent::Opened`; Windows and Linux through argv and the
   single-instance plugin, which forwards to the running window.
 - **Projects are loaded before importing into them**, because loading a project deletes stored files its manifest

@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { strToU8, zipSync } from "fflate";
 import {
-  FramenoteError,
+  FoveaError,
   LIMITS,
-  packFramenote,
+  packFovea,
   reorderImages,
   resolveImportCollision,
   sortedImages,
-  unpackFramenote,
+  unpackFovea,
   unsafePathReason,
   updateUserNotes,
 } from "../src";
 import { rawZip, sampleAssignment } from "./helpers";
 
-async function pack(manifest: Parameters<typeof packFramenote>[0], assets: Map<string, Uint8Array>, stripGps = false) {
-  return packFramenote(manifest, async (p) => assets.get(p)!, { stripGps });
+async function pack(manifest: Parameters<typeof packFovea>[0], assets: Map<string, Uint8Array>, stripGps = false) {
+  return packFovea(manifest, async (p) => assets.get(p)!, { stripGps });
 }
 
-describe(".framenote round trip", () => {
+describe(".fovea round trip", () => {
   it("preserves order, captions, metadata and presentation settings", async () => {
     let { manifest, assets } = await sampleAssignment(3);
     const ids = sortedImages(manifest).map((i) => i.id);
@@ -28,7 +28,7 @@ describe(".framenote round trip", () => {
     manifest.presentation.fitMode = "cover";
 
     const bytes = await pack(manifest, assets, false);
-    const out = await unpackFramenote(bytes);
+    const out = await unpackFovea(bytes);
     expect(out.warnings).toEqual([]);
     expect(sortedImages(out.manifest).map((i) => i.id)).toEqual([ids[2], ids[0], ids[1]]);
     const first = out.manifest.images.find((i) => i.id === ids[0])!;
@@ -54,7 +54,7 @@ describe(".framenote round trip", () => {
 
   it("strips GPS when asked", async () => {
     const { manifest, assets } = await sampleAssignment(2);
-    const out = await unpackFramenote(await pack(manifest, assets, true));
+    const out = await unpackFovea(await pack(manifest, assets, true));
     expect(out.manifest.images.every((i) => i.gps === undefined)).toBe(true);
   });
 
@@ -65,7 +65,7 @@ describe(".framenote round trip", () => {
     const bad = new Uint8Array(assets.get(victim.asset)!);
     bad[bad.length - 3] = 0x99;
     tampered.set(victim.asset, bad);
-    const out = await unpackFramenote(await pack(manifest, tampered));
+    const out = await unpackFovea(await pack(manifest, tampered));
     expect(out.checksumMismatches).toEqual([victim.id]);
     expect(out.warnings[0]!.message).toMatch(/checksum/);
   });
@@ -95,11 +95,11 @@ describe("archive safety", () => {
     expect(unsafePathReason("assets/images/img-1.jpg")).toBeNull();
   });
 
-  async function expectCode(data: Uint8Array, code: FramenoteError["code"]) {
-    const err = await unpackFramenote(data).catch((e) => e);
-    expect(err).toBeInstanceOf(FramenoteError);
+  async function expectCode(data: Uint8Array, code: FoveaError["code"]) {
+    const err = await unpackFovea(data).catch((e) => e);
+    expect(err).toBeInstanceOf(FoveaError);
     expect(err.code).toBe(code);
-    return err as FramenoteError;
+    return err as FoveaError;
   }
 
   it("rejects traversal entries inside a real archive", async () => {
@@ -133,7 +133,7 @@ describe("archive safety", () => {
     const big = new Uint8Array(4 * 1024 * 1024);
     const data = zipSync({ "manifest.json": strToU8("{}"), "assets/a.bin": [big, { level: 9 }] });
     expect(data.length).toBeLessThan(64 * 1024);
-    const err = await unpackFramenote(data, { ...LIMITS, maxTotalUncompressedBytes: 1024 * 1024 }).catch((e) => e);
+    const err = await unpackFovea(data, { ...LIMITS, maxTotalUncompressedBytes: 1024 * 1024 }).catch((e) => e);
     expect(err.code).toBe("limits-exceeded");
   });
 
@@ -144,8 +144,8 @@ describe("archive safety", () => {
     for (let i = 0; i < data.length - 4; i++) {
       if (view.getUint32(i, true) === 0x02014b50) view.setUint32(i + 24, 10, true);
     }
-    const err = await unpackFramenote(data, { ...LIMITS, maxTotalUncompressedBytes: 1024 * 1024 }).catch((e) => e);
-    expect(err).toBeInstanceOf(FramenoteError);
+    const err = await unpackFovea(data, { ...LIMITS, maxTotalUncompressedBytes: 1024 * 1024 }).catch((e) => e);
+    expect(err).toBeInstanceOf(FoveaError);
     expect(["limits-exceeded", "corrupt-archive"]).toContain(err.code);
   });
 
@@ -154,7 +154,7 @@ describe("archive safety", () => {
   });
 
   it("rejects a zip without a manifest", async () => {
-    await expectCode(rawZip({ "assets/a.jpg": "x" }), "not-a-framenote");
+    await expectCode(rawZip({ "assets/a.jpg": "x" }), "not-a-fovea");
   });
 
   it("explains newer format versions", async () => {
@@ -162,7 +162,7 @@ describe("archive safety", () => {
     const err = await expectCode(rawZip({ "manifest.json": JSON.stringify({ ...manifest, formatVersion: 7 }) }), "unsupported-version");
     expect(err.message).toMatch(/version 7/);
     expect(err.message).toMatch(/supports up to version 1/);
-    expect(err.message).toMatch(/Update Frame Note/);
+    expect(err.message).toMatch(/Update Fovea/);
   });
 
   it("rejects video entries with a clear message", async () => {

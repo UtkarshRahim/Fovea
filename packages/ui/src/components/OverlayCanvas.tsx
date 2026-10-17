@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ImageEntry, OverlaySettings } from "@framenote/core";
+import type { ImageEntry, OverlaySettings } from "@fovea/core";
 import { computeLayout, contentFor, drawLayout, ensureFontsLoaded } from "../lib/draw";
 
 /** Live overlay. Drawn with the same layout and draw code as exports so the two always match. */

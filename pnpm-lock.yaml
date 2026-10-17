@@ -10,10 +10,10 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@framenote/core':
+      '@fovea/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@framenote/ui':
+      '@fovea/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@tauri-apps/api':
@@ -50,10 +50,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@framenote/core':
+      '@fovea/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@framenote/ui':
+      '@fovea/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       exifr:
@@ -145,7 +145,7 @@ importers:
       '@fontsource/newsreader':
         specifier: ^5.3.0
         version: 5.3.0
-      '@framenote/core':
+      '@fovea/core':
         specifier: workspace:*
         version: link:../core
       lucide-react:

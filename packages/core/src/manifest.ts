@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const FORMAT_NAME = "framenote";
-export const FILE_EXTENSION = ".framenote";
+export const FORMAT_NAME = "fovea";
+export const FILE_EXTENSION = ".fovea";
 export const CURRENT_FORMAT_VERSION = 1;
 export const SUPPORTED_FORMAT_VERSIONS = [1] as const;
 

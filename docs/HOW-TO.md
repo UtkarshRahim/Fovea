@@ -1,6 +1,6 @@
-# How to use Frame Note
+# How to use Fovea
 
-This guide walks through Frame Note from an empty start to a finished slideshow you can hand to someone else. It
+This guide walks through Fovea from an empty start to a finished slideshow you can hand to someone else. It
 follows one project, *Central India, March*: ten photographs from Bandhavgarh, Kanha, Satpura, Kabini and Nagarhole.
 
 The screenshots come from the browser version in a laptop-sized window. The desktop app on macOS and Windows has the
@@ -25,11 +25,11 @@ same screens. Where the desktop app behaves differently, the text says so.
 
 ## 1. Install
 
-Installers are on the [Releases page](https://github.com/UtkarshRahim/FrameNote/releases/latest).
+Installers are on the [Releases page](https://github.com/UtkarshRahim/Fovea/releases/latest).
 
 - **Mac:** download the `.dmg` (`aarch64` for Apple silicon, `x64` for Intel) and follow [Install on a Mac](../README.md#install-on-a-mac). The app
   isn't signed with an Apple Developer ID, so macOS needs one Terminal command the first time.
-- **Windows:** run `Frame Note_x.y.z_x64-setup.exe`, or `Frame Note_x.y.z_x86-setup.exe` on 32-bit Windows. If
+- **Windows:** run `Fovea_x.y.z_x64-setup.exe`, or `Fovea_x.y.z_x86-setup.exe` on 32-bit Windows. If
   SmartScreen says "Windows protected your PC", click **More info → Run anyway**. See
   [Opening the unsigned apps](../README.md#opening-the-unsigned-apps).
 - **Phone, tablet or any browser:** open the web app. Nothing to install. You can add it to your home screen, and it
@@ -37,7 +37,7 @@ Installers are on the [Releases page](https://github.com/UtkarshRahim/FrameNote/
 
 ## 2. Create a project
 
-A project is one set of photographs: a trip, an assignment, a portfolio review. The first time you open Frame Note the
+A project is one set of photographs: a trip, an assignment, a portfolio review. The first time you open Fovea the
 list is empty.
 
 ![Empty projects list with New project and Import buttons](how-to/01-projects-empty.jpg)
@@ -59,7 +59,7 @@ Click **Add photos** and pick your files, or drag them onto the window.
 - **Browser:** JPEG and PNG everywhere. RAW files are shown from the preview the camera embeds in them. TIFF works in
   Safari only.
 
-Your original files are never changed. Frame Note keeps its own copy, up to 4096 px on the long edge, inside the
+Your original files are never changed. Fovea keeps its own copy, up to 4096 px on the long edge, inside the
 project.
 
 A progress bar shows how far the import has got. **Cancel** stops it, and keeps the photographs added so far.
@@ -92,21 +92,21 @@ means 100% of that copy, not of the original RAW file.
 
 ### Look through a folder without making a project
 
-Frame Note can also stand in for Preview or Photos when you just want to look. Choose **Open → Photo…** (or
+Fovea can also stand in for Preview or Photos when you just want to look. Choose **Open → Photo…** (or
 **Folder…**) on the projects screen, drop photos onto it, or in the desktop app right-click a photo in Finder or
-Explorer and choose **Open With → Frame Note**. Every photo in that folder opens in order, whatever the format: RAW,
+Explorer and choose **Open With → Fovea**. Every photo in that folder opens in order, whatever the format: RAW,
 JPEG, HEIC, TIFF, PNG, WebP and more. RAW files show the camera's full-size embedded preview straight away.
 
 The same keys work as in a project (`←` `→`, `Home` `End`, zoom, `A` for focus, `F` fullscreen), plus `O` for camera
 data and `V` to stack it vertically. Nothing is copied or changed. Recent folders appear on the projects screen;
-Frame Note remembers only where they are (the path on desktop, the folder permission in Chrome and Edge).
+Fovea remembers only where they are (the path on desktop, the folder permission in Chrome and Edge).
 
 When a photo is worth keeping, use **Add to project** to copy it into an existing or new project, or **New project
 from all N photos** to bring the whole folder in for captioning and presenting.
 
 ## 5. Review mode: captions, species and location
 
-Click **Review** (or press `R`) when you want to work on the project rather than just look at it. Frame Note
+Click **Review** (or press `R`) when you want to work on the project rather than just look at it. Fovea
 remembers which mode you used last.
 
 ![Review mode: filmstrip on the left, notes panel on the right](how-to/07-review-mode.jpg)
@@ -120,7 +120,7 @@ Review mode adds:
 - **Your notes on the right.** A **Caption**, the **Species** and the **Location** for each photograph. They appear
   on the photo during the presentation.
 - **Project notes** at the bottom of the panel: the brief, or what you want reviewers to look at.
-- **Show on photo**, **Export image** and **Export .framenote** in the top bar.
+- **Show on photo**, **Export image** and **Export .fovea** in the top bar.
 
 Everything saves by itself. "Saved locally" next to the title confirms it.
 
@@ -194,10 +194,10 @@ your downloads.
 
 ## 10. Share a whole project
 
-Click **Export .framenote** to pack the whole project into one file: every photograph, caption, comment and
+Click **Export .fovea** to pack the whole project into one file: every photograph, caption, comment and
 presentation setting. The file opens on any computer or phone browser, without the original RAW files.
 
-![Export .framenote dialog](how-to/14-export-framenote.jpg)
+![Export .fovea dialog](how-to/14-export-fovea.jpg)
 
 GPS locations from the camera are left out unless you tick **Include GPS locations from the camera**. That option
 only appears when at least one photograph has a location.
@@ -205,18 +205,18 @@ only appears when at least one photograph has a location.
 Click **Export**. The desktop app asks where to save the file. The browser saves it to your downloads, and on a phone
 it opens the share sheet.
 
-![Notice confirming 10 images were saved to Central India_ March.framenote](how-to/15-export-framenote-saved.jpg)
+![Notice confirming 10 images were saved to Central India_ March.fovea](how-to/15-export-fovea-saved.jpg)
 
 Send the file however you like: AirDrop, email, a USB stick or a shared drive.
 
 ## 11. Open a project someone sent you
 
-On the projects list, click **Import** and choose **.framenote file**. You can also drag a `.framenote` file onto the
+On the projects list, click **Import** and choose **.fovea file**. You can also drag a `.fovea` file onto the
 projects list.
 
-![Import menu with ".framenote file" and "Unzipped project folder"](how-to/16-import-menu.jpg)
+![Import menu with ".fovea file" and "Unzipped project folder"](how-to/16-import-menu.jpg)
 
-A `.framenote` file is a ZIP archive. If someone has unzipped it, choose **Unzipped project folder** and pick the
+A `.fovea` file is a ZIP archive. If someone has unzipped it, choose **Unzipped project folder** and pick the
 folder that contains `manifest.json`. This works in the desktop app, desktop browsers and Android, but not on an
 iPhone or iPad.
 
@@ -225,7 +225,7 @@ The project opens with all its photographs, notes and comments:
 ![The imported project, "Central India, March (imported)", with its notes and comments](how-to/17-imported.jpg)
 
 Importing never overwrites anything. If you already have the same project, you get a copy with "(imported)" added to
-its title. To pass a reviewed project back, the reviewer adds comments and exports a new `.framenote`.
+its title. To pass a reviewed project back, the reviewer adds comments and exports a new `.fovea`.
 
 ## 12. Switch, rename and delete projects
 
@@ -237,8 +237,8 @@ The ← button, or **All projects**, opens the projects list. Each row has **Ren
 
 ![Projects list with three projects](how-to/19-projects-list.jpg)
 
-**Delete** removes the project and Frame Note's copies of its photographs. Your original files are not touched. It
-can't be undone, so export a `.framenote` first if you might want the project back.
+**Delete** removes the project and Fovea's copies of its photographs. Your original files are not touched. It
+can't be undone, so export a `.fovea` first if you might want the project back.
 
 ## 13. Keyboard shortcuts
 
@@ -269,11 +269,11 @@ The folder viewer uses the presentation keys, with `A` for focus, `O` for camera
 Nothing leaves your device. There are no accounts, uploads or analytics.
 
 - **Desktop app:** in the app's data folder on your computer.
-- **Folder viewer:** photos stay where they are. Frame Note remembers only recent folder locations.
+- **Folder viewer:** photos stay where they are. Fovea remembers only recent folder locations.
 - **Browser:** in that browser's storage on that device. The projects list shows how much space is in use.
-  Browsers can clear stored data, so treat an exported `.framenote` as your backup.
+  Browsers can clear stored data, so treat an exported `.fovea` as your backup.
 
-To move a project between your phone and your computer, export a `.framenote` on one and import it on the other.
+To move a project between your phone and your computer, export a `.fovea` on one and import it on the other.
 Projects don't sync by themselves yet. See [SYNC.md](SYNC.md).
 
 ## Photo credits

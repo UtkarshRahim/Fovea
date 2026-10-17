@@ -10,7 +10,7 @@ import {
   type ImageEntry,
   type Manifest,
   type OverlaySettings,
-} from "@framenote/core";
+} from "@fovea/core";
 import { usePlatform, type FolderPhoto, type FolderViewer, type ImportProgress, type PhotoFolder, type ViewablePhoto } from "../platform";
 import { navigate } from "../lib/router";
 import { hasModifier, isTypingTarget } from "../lib/keys";
@@ -71,8 +71,8 @@ interface Ready {
 type Shown = ({ name: string } & Ready) | { name: string; error: string };
 
 const CACHE_SIZE = 8;
-const OVERLAY_KEY = "framenote.viewerOverlay";
-const DIRECTION_KEY = "framenote.viewerOverlayDirection";
+const OVERLAY_KEY = "fovea.viewerOverlay";
+const DIRECTION_KEY = "fovea.viewerOverlayDirection";
 
 function sourceLabel(name: string, source: ViewablePhoto["source"]) {
   const ext = extensionOf(name).toUpperCase();
@@ -297,7 +297,7 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
       <div className="viewer">
         <ViewerTopbar folder={folder} />
         <div className="center-message">
-          <p className="muted">There are no photos Frame Note can show in “{folder.name}”.</p>
+          <p className="muted">There are no photos Fovea can show in “{folder.name}”.</p>
           <OpenPhotosButton />
         </div>
       </div>

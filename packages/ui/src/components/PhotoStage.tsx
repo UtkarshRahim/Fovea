@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { FocusArea, ImageEntry, OverlaySettings } from "@framenote/core";
+import type { FocusArea, ImageEntry, OverlaySettings } from "@fovea/core";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { OverlayCanvas } from "./OverlayCanvas";
 

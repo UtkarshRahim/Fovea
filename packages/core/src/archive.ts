@@ -1,6 +1,6 @@
 import { strFromU8, strToU8, Unzip, UnzipInflate, zipSync, type Unzipped, type Zippable } from "fflate";
 import { sortedImages, type Manifest } from "./manifest";
-import { FramenoteError, parseManifest } from "./validate";
+import { FoveaError, parseManifest } from "./validate";
 import { sha256Hex } from "./checksum";
 
 export const LIMITS = {
@@ -35,7 +35,7 @@ export interface ImportWarning {
   message: string;
 }
 
-export interface UnpackedFramenote {
+export interface UnpackedFovea {
   manifest: Manifest;
   /** Relative asset path → bytes. */
   assets: Map<string, Uint8Array>;
@@ -54,7 +54,7 @@ interface CentralEntry {
 export function readCentralDirectory(data: Uint8Array): CentralEntry[] {
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
   const minEocd = 22;
-  if (data.length < minEocd) throw new FramenoteError("The file is too small to be a ZIP archive.", "corrupt-archive");
+  if (data.length < minEocd) throw new FoveaError("The file is too small to be a ZIP archive.", "corrupt-archive");
   let eocd = -1;
   const stop = Math.max(0, data.length - minEocd - 65535);
   for (let i = data.length - minEocd; i >= stop; i--) {
@@ -63,29 +63,29 @@ export function readCentralDirectory(data: Uint8Array): CentralEntry[] {
       break;
     }
   }
-  if (eocd < 0) throw new FramenoteError("This file is not a valid ZIP archive.", "corrupt-archive");
+  if (eocd < 0) throw new FoveaError("This file is not a valid ZIP archive.", "corrupt-archive");
   let count = view.getUint16(eocd + 10, true);
   let cdOffset = view.getUint32(eocd + 16, true);
   if (count === 0xffff || cdOffset === 0xffffffff) {
     const locator = eocd - 20;
     if (locator < 0 || view.getUint32(locator, true) !== 0x07064b50) {
-      throw new FramenoteError("ZIP64 archive is missing its locator record.", "corrupt-archive");
+      throw new FoveaError("ZIP64 archive is missing its locator record.", "corrupt-archive");
     }
     const z64 = Number(view.getBigUint64(locator + 8, true));
     if (z64 < 0 || z64 + 56 > data.length || view.getUint32(z64, true) !== 0x06064b50) {
-      throw new FramenoteError("ZIP64 end record is invalid.", "corrupt-archive");
+      throw new FoveaError("ZIP64 end record is invalid.", "corrupt-archive");
     }
     count = Number(view.getBigUint64(z64 + 32, true));
     cdOffset = Number(view.getBigUint64(z64 + 48, true));
   }
   if (count > LIMITS.maxEntries) {
-    throw new FramenoteError(`The archive has ${count} entries; the limit is ${LIMITS.maxEntries}.`, "limits-exceeded");
+    throw new FoveaError(`The archive has ${count} entries; the limit is ${LIMITS.maxEntries}.`, "limits-exceeded");
   }
   const entries: CentralEntry[] = [];
   let p = cdOffset;
   for (let i = 0; i < count; i++) {
     if (p + 46 > data.length || view.getUint32(p, true) !== 0x02014b50) {
-      throw new FramenoteError("The ZIP central directory is corrupt.", "corrupt-archive");
+      throw new FoveaError("The ZIP central directory is corrupt.", "corrupt-archive");
     }
     let compressedSize = view.getUint32(p + 20, true);
     let uncompressedSize = view.getUint32(p + 24, true);
@@ -128,13 +128,13 @@ function unzipLimited(data: Uint8Array, limits: Limits): Unzipped {
     file.ondata = (err, chunk, final) => {
       if (failure) return;
       if (err) {
-        failure = new FramenoteError(`The archive could not be read: ${err.message}`, "corrupt-archive");
+        failure = new FoveaError(`The archive could not be read: ${err.message}`, "corrupt-archive");
         return;
       }
       size += chunk.length;
       total += chunk.length;
       if (size > limits.maxEntryBytes || total > limits.maxTotalUncompressedBytes) {
-        failure = new FramenoteError("The archive expands beyond the size limit and was rejected.", "limits-exceeded");
+        failure = new FoveaError("The archive expands beyond the size limit and was rejected.", "limits-exceeded");
         file.terminate();
         return;
       }
@@ -155,59 +155,59 @@ function unzipLimited(data: Uint8Array, limits: Limits): Unzipped {
   try {
     uz.push(data, true);
   } catch (e) {
-    failure ??= new FramenoteError(`The archive could not be read: ${(e as Error).message}`, "corrupt-archive");
+    failure ??= new FoveaError(`The archive could not be read: ${(e as Error).message}`, "corrupt-archive");
   }
   if (failure) throw failure;
   return out;
 }
 
-export async function unpackFramenote(data: Uint8Array, limits: Limits = LIMITS): Promise<UnpackedFramenote> {
+export async function unpackFovea(data: Uint8Array, limits: Limits = LIMITS): Promise<UnpackedFovea> {
   const entries = readCentralDirectory(data);
   const seen = new Set<string>();
   let total = 0;
   for (const e of entries) {
     if (e.name.endsWith("/")) continue;
     const reason = unsafePathReason(e.name);
-    if (reason) throw new FramenoteError(`Rejected unsafe archive entry "${e.name}": ${reason}.`, "unsafe-path");
+    if (reason) throw new FoveaError(`Rejected unsafe archive entry "${e.name}": ${reason}.`, "unsafe-path");
     const norm = normalise(e.name);
-    if (seen.has(norm)) throw new FramenoteError(`The archive contains a duplicate entry "${e.name}".`, "unsafe-path");
+    if (seen.has(norm)) throw new FoveaError(`The archive contains a duplicate entry "${e.name}".`, "unsafe-path");
     seen.add(norm);
     if (!ROOT_FILES.has(e.name) && !e.name.startsWith("assets/")) {
-      throw new FramenoteError(`Unexpected file "${e.name}" outside assets/.`, "unsafe-path");
+      throw new FoveaError(`Unexpected file "${e.name}" outside assets/.`, "unsafe-path");
     }
     if (e.uncompressedSize > limits.maxEntryBytes) {
-      throw new FramenoteError(`"${e.name}" is larger than the per-file limit.`, "limits-exceeded");
+      throw new FoveaError(`"${e.name}" is larger than the per-file limit.`, "limits-exceeded");
     }
     if (e.name === "manifest.json" && e.uncompressedSize > limits.maxManifestBytes) {
-      throw new FramenoteError("manifest.json is larger than the 8 MB limit.", "limits-exceeded");
+      throw new FoveaError("manifest.json is larger than the 8 MB limit.", "limits-exceeded");
     }
     total += e.uncompressedSize;
   }
   if (total > limits.maxTotalUncompressedBytes) {
-    throw new FramenoteError("The archive expands beyond the size limit and was rejected.", "limits-exceeded");
+    throw new FoveaError("The archive expands beyond the size limit and was rejected.", "limits-exceeded");
   }
   if (!seen.has("manifest.json")) {
-    throw new FramenoteError("This archive has no manifest.json, so it is not a Frame Note file.", "not-a-framenote");
+    throw new FoveaError("This archive has no manifest.json, so it is not a Fovea file.", "not-a-fovea");
   }
 
   const files = unzipLimited(data, limits);
   const localSeen = new Set<string>();
   for (const name of Object.keys(files)) {
     if (name.endsWith("/")) continue;
-    if (unsafePathReason(name)) throw new FramenoteError(`Rejected unsafe archive entry "${name}".`, "unsafe-path");
+    if (unsafePathReason(name)) throw new FoveaError(`Rejected unsafe archive entry "${name}".`, "unsafe-path");
     if (!seen.has(normalise(name)) || localSeen.has(normalise(name))) {
-      throw new FramenoteError(`The archive's file list is inconsistent ("${name}").`, "corrupt-archive");
+      throw new FoveaError(`The archive's file list is inconsistent ("${name}").`, "corrupt-archive");
     }
     localSeen.add(normalise(name));
   }
 
   const manifestBytes = files["manifest.json"];
-  if (!manifestBytes) throw new FramenoteError("manifest.json is missing.", "not-a-framenote");
+  if (!manifestBytes) throw new FoveaError("manifest.json is missing.", "not-a-fovea");
   let json: unknown;
   try {
     json = JSON.parse(strFromU8(manifestBytes));
   } catch {
-    throw new FramenoteError("manifest.json is not valid JSON.", "invalid-manifest");
+    throw new FoveaError("manifest.json is not valid JSON.", "invalid-manifest");
   }
   const manifest = parseManifest(json);
 
@@ -219,7 +219,7 @@ export async function unpackFramenote(data: Uint8Array, limits: Limits = LIMITS)
   for (const name of Object.keys(files)) {
     if (name.endsWith("/") || ROOT_FILES.has(name)) continue;
     if (!referenced.has(name)) {
-      throw new FramenoteError(`The archive contains "${name}", which the manifest does not reference.`, "unsafe-path");
+      throw new FoveaError(`The archive contains "${name}", which the manifest does not reference.`, "unsafe-path");
     }
   }
 
@@ -230,7 +230,7 @@ export async function unpackFramenote(data: Uint8Array, limits: Limits = LIMITS)
     const asset = files[img.asset];
     const thumb = files[img.thumbnail];
     if (!asset || !thumb) {
-      throw new FramenoteError(
+      throw new FoveaError(
         `Image "${img.originalFilename}" is missing ${!asset ? img.asset : img.thumbnail} in the archive.`,
         "missing-asset",
       );
@@ -246,10 +246,10 @@ export async function unpackFramenote(data: Uint8Array, limits: Limits = LIMITS)
   return { manifest, assets, warnings, checksumMismatches };
 }
 
-export const README_TEXT = `FRAME NOTE PROJECT
-==================
+export const README_TEXT = `FOVEA PROJECT
+=============
 
-This .framenote file is a standard ZIP archive created by Frame Note, a
+This .fovea file is a standard ZIP archive created by Fovea, a
 presentation and review tool for photographers.
 
 Contents
@@ -259,7 +259,7 @@ Contents
   assets/thumbnails/   Small preview images.
 
 How to open it
-  Open the file in the Frame Note desktop app, or in the Frame Note web app
+  Open the file in the Fovea desktop app, or in the Fovea web app
   in any modern browser (desktop, Android, iPhone, iPad). No account needed.
 
 You can also unzip it with any ZIP tool to get at the images directly.
@@ -272,8 +272,8 @@ export interface PackOptions {
   platform?: "web" | "desktop";
 }
 
-/** Builds a .framenote ZIP. `getAsset` returns bytes for a relative asset path. */
-export async function packFramenote(
+/** Builds a .fovea ZIP. `getAsset` returns bytes for a relative asset path. */
+export async function packFovea(
   manifest: Manifest,
   getAsset: (path: string) => Promise<Uint8Array>,
   opts: PackOptions = {},

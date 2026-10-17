@@ -1,5 +1,5 @@
 {
-  "name": "@framenote/desktop",
+  "name": "@fovea/desktop",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -12,8 +12,8 @@
     "test": "cd src-tauri && cargo test"
   },
   "dependencies": {
-    "@framenote/core": "workspace:*",
-    "@framenote/ui": "workspace:*",
+    "@fovea/core": "workspace:*",
+    "@fovea/ui": "workspace:*",
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-dialog": "^2.8.3",
     "react": "^19.3.1",

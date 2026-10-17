@@ -1,5 +1,5 @@
 {
-  "name": "@framenote/web",
+  "name": "@fovea/web",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -12,8 +12,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@framenote/core": "workspace:*",
-    "@framenote/ui": "workspace:*",
+    "@fovea/core": "workspace:*",
+    "@fovea/ui": "workspace:*",
     "exifr": "^7.1.3",
     "idb": "^8.0.4",
     "react": "^19.3.1",

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Focus, Maximize, Minimize, SlidersHorizontal, Type, X } from "lucide-react";
-import { sortedImages, type Manifest } from "@framenote/core";
+import { sortedImages, type Manifest } from "@fovea/core";
 import { usePlatform } from "../platform";
 import { useAutosave } from "../hooks/useAutosave";
 import { acquireAssetUrl, releaseAssetRef } from "../hooks/useAssetUrl";
@@ -14,7 +14,7 @@ import { focusLabel } from "../components/StageControls";
 import { useFocusPoints } from "../hooks/useFocusPoints";
 import { describeError } from "./Library";
 
-const HINT_KEY = "framenote.presentHintSeen";
+const HINT_KEY = "fovea.presentHintSeen";
 const IDLE_MS = 2500;
 
 export function Present({ id, index, mode }: { id: string; index: number; mode: "present" | "preview" }) {

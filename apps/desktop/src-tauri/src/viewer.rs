@@ -128,7 +128,7 @@ pub fn with_orientation(jpeg: &[u8], orientation: u16) -> Vec<u8> {
 
 fn check(path: &Path) -> Result<String, String> {
     if !is_viewable(path) {
-        return Err("Frame Note cannot show this kind of file.".into());
+        return Err("Fovea cannot show this kind of file.".into());
     }
     Ok(ext_of(path))
 }

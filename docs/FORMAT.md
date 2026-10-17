@@ -1,9 +1,9 @@
-# The `.framenote` format (version 1)
+# The `.fovea` format (version 1)
 
-A `.framenote` file is a standard ZIP archive. Any unzip tool can open it.
+A `.fovea` file is a standard ZIP archive. Any unzip tool can open it.
 
 ```
-assignment.framenote
+assignment.fovea
 ├── manifest.json            deflated
 ├── README.txt               deflated, plain-text explanation for humans
 └── assets/
@@ -11,21 +11,21 @@ assignment.framenote
     └── thumbnails/<id>.jpg  stored, ≤ 512 px long edge
 ```
 
-The JSON Schema is in [`framenote.schema.json`](framenote.schema.json). It is generated from the Zod schema in
+The JSON Schema is in [`fovea.schema.json`](fovea.schema.json). It is generated from the Zod schema in
 `packages/core/src/manifest.ts` with `pnpm schema`.
 
 ## Manifest
 
 ```json
 {
-  "format": "framenote",
+  "format": "fovea",
   "formatVersion": 1,
   "assignmentId": "8a3c3b0e-6f0e-4e7b-9b1c-3c0f8f4b2d11",
   "title": "Sal Forest Assignment",
   "notes": "Optional assignment-level notes",
   "createdAt": "2026-10-15T10:00:00.000Z",
   "modifiedAt": "2026-10-15T10:00:00.000Z",
-  "generator": { "app": "framenote", "version": "0.1.0", "platform": "desktop" },
+  "generator": { "app": "fovea", "version": "0.1.0", "platform": "desktop" },
   "presentation": {
     "fitMode": "contain",
     "overlay": {
@@ -99,7 +99,7 @@ A reader **must**:
 
 ### Unzipped folders
 
-A folder made by unzipping a `.framenote` can be imported directly. The reader looks for the shallowest
+A folder made by unzipping a `.fovea` can be imported directly. The reader looks for the shallowest
 `manifest.json` (so picking its parent folder also works) and refuses a folder with two at the same depth. Rules 1, 3,
 4, 5 and 6 apply as above. Rule 2 is relaxed: files the manifest doesn't reference, and `.DS_Store`, `Thumbs.db`,
 `desktop.ini`, `._*` and `__MACOSX/`, are ignored, and an image whose asset or thumbnail is missing is dropped. Each

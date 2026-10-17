@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
-import { FIELD_LABELS, OVERLAY_FIELDS, type OverlayField, type Presentation } from "@framenote/core";
+import { FIELD_LABELS, OVERLAY_FIELDS, type OverlayField, type Presentation } from "@fovea/core";
 import { Checkbox, IconButton, Segmented, Slider } from "./primitives";
 
 const FIELD_NAMES: Record<OverlayField, string> = {

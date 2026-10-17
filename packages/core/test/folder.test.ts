@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { strToU8, unzipSync } from "fflate";
-import { FramenoteError, findProjectRoot, packFramenote, sortedImages, unpackFolder, updateUserNotes, type FolderFile } from "../src";
+import { FoveaError, findProjectRoot, packFovea, sortedImages, unpackFolder, updateUserNotes, type FolderFile } from "../src";
 import { sampleAssignment } from "./helpers";
 
 async function unzippedFolder(prefix = "", count = 3) {
   let { manifest, assets } = await sampleAssignment(count);
   const first = sortedImages(manifest)[0]!;
   manifest = updateUserNotes(manifest, first.id, { caption: "Dawn at the waterhole." });
-  const zip = await packFramenote(manifest, async (p) => assets.get(p)!);
+  const zip = await packFovea(manifest, async (p) => assets.get(p)!);
   const files = Object.entries(unzipSync(zip)).map(([path, data]) => toFile(prefix + path, data));
   return { manifest, files };
 }
@@ -17,7 +17,7 @@ function toFile(path: string, data: Uint8Array): FolderFile {
 }
 
 describe("unpackFolder", () => {
-  it("imports an unzipped .framenote folder with captions and order intact", async () => {
+  it("imports an unzipped .fovea folder with captions and order intact", async () => {
     const { manifest, files } = await unzippedFolder("Sal Forest/");
     const out = await unpackFolder(files);
     expect(out.warnings).toEqual([]);
@@ -56,7 +56,7 @@ describe("unpackFolder", () => {
   });
 
   it("rejects folders without a manifest and folders with several projects", async () => {
-    await expect(unpackFolder([toFile("photo.jpg", strToU8("x"))])).rejects.toBeInstanceOf(FramenoteError);
+    await expect(unpackFolder([toFile("photo.jpg", strToU8("x"))])).rejects.toBeInstanceOf(FoveaError);
     expect(() => findProjectRoot(["a/manifest.json", "b/manifest.json"])).toThrow(/more than one project/);
     expect(findProjectRoot(["a/manifest.json", "a/old/manifest.json"])).toBe("a/");
   });

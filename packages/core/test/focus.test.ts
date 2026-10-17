@@ -129,13 +129,13 @@ describe("focus areas in the manifest", () => {
     const meta = normalizeTags({ ...z8, Orientation: 1 });
     expect(meta.focusAreas).toHaveLength(1);
     const m = parseManifest({
-      format: "framenote",
+      format: "fovea",
       formatVersion: 1,
       assignmentId: crypto.randomUUID(),
       title: "t",
       createdAt: "x",
       modifiedAt: "x",
-      generator: { app: "framenote", version: "0.1.0", platform: "desktop" },
+      generator: { app: "fovea", version: "0.1.0", platform: "desktop" },
       images: [
         {
           id: "img-1",

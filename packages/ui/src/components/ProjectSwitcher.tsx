@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DropdownMenu } from "radix-ui";
 import { Check, ChevronDown, LayoutGrid, Pencil } from "lucide-react";
-import type { AssignmentSummary } from "@framenote/core";
+import type { AssignmentSummary } from "@fovea/core";
 import { usePlatform } from "../platform";
 import { navigate } from "../lib/router";
 

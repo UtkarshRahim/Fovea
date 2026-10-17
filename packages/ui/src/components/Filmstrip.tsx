@@ -12,7 +12,7 @@ import {
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
-import type { ImageEntry } from "@framenote/core";
+import type { ImageEntry } from "@fovea/core";
 import { useAssetUrl } from "../hooks/useAssetUrl";
 import { IconButton } from "./primitives";
 

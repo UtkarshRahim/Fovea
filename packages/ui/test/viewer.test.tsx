@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { buildImageEntry, newImageId } from "@framenote/core";
+import { buildImageEntry, newImageId } from "@fovea/core";
 import { App } from "../src/App";
 import { openInViewer } from "../src/lib/viewerSession";
 import type { FolderPhoto, FolderViewer, PhotoFolder } from "../src/platform";
@@ -90,7 +90,7 @@ describe("folder viewer", () => {
 
     await user.keyboard("a");
     await waitFor(() => expect(document.querySelector(".focus-box")).not.toBeNull());
-    expect(localStorage.getItem("framenote.showFocus")).toBe("1");
+    expect(localStorage.getItem("fovea.showFocus")).toBe("1");
 
     await user.keyboard("{End}");
     await waitFor(() => expect(screen.getByRole("button", { name: /None recorded for this photo/ })).toBeInTheDocument());

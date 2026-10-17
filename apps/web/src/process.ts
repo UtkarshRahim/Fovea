@@ -12,7 +12,7 @@ import {
   type AssetSource,
   type CameraMetadata,
   type ImageEntry,
-} from "@framenote/core";
+} from "@fovea/core";
 
 export const ASSET_LONG_EDGE = 4096;
 export const THUMB_LONG_EDGE = 512;
@@ -159,7 +159,7 @@ export async function processFile(file: File): Promise<ProcessedFile> {
       const preview = largestEmbeddedJpeg(rawBytes!);
       if (!preview) {
         throw new ProcessError(
-          `No usable embedded preview was found in this ${extensionOf(file.name).toUpperCase() || "RAW"} file. Open it in the Frame Note desktop app, which can decode more RAW variants.`,
+          `No usable embedded preview was found in this ${extensionOf(file.name).toUpperCase() || "RAW"} file. Open it in the Fovea desktop app, which can decode more RAW variants.`,
         );
       }
       source = file.slice(preview.offset, preview.offset + preview.length, "image/jpeg");
@@ -177,7 +177,7 @@ export async function processFile(file: File): Promise<ProcessedFile> {
   try {
     bitmap = await decode(source, honourEmbedded);
   } catch (e) {
-    if (kind === "tiff") throw new ProcessError("This browser cannot open TIFF files. Use the Frame Note desktop app for TIFF.");
+    if (kind === "tiff") throw new ProcessError("This browser cannot open TIFF files. Use the Fovea desktop app for TIFF.");
     throw e;
   }
   const orientation = honourEmbedded ? 1 : metadata.orientation ?? 1;

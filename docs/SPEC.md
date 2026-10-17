@@ -1,4 +1,4 @@
-> **Note:** This is the original build specification, kept for reference. The product has since been named **Frame Note** and the file format uses `.framenote` (`"format": "framenote"`). Where this document says FIELDNOTE or `.fieldnote`, read Frame Note / `.framenote`. Product decisions made after this spec are in `DECISIONS.md`.
+> **Note:** This is the original build specification, kept for reference. The product has since been named **Fovea** and the file format uses `.fovea` (`"format": "fovea"`). Where this document says FIELDNOTE or `.fieldnote`, read Fovea / `.fovea`. Product decisions made after this spec are in `DECISIONS.md`.
 
 # FIELDNOTE — Build Specification
 

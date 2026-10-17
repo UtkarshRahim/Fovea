@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addComment, packFramenote, replaceImage, sortedImages, unpackFramenote, updateUserNotes } from "../src";
+import { addComment, packFovea, replaceImage, sortedImages, unpackFovea, updateUserNotes } from "../src";
 import { sampleAssignment } from "./helpers";
 
 describe("replaceImage", () => {
@@ -26,7 +26,7 @@ describe("replaceImage", () => {
     expect(out.images.filter((i) => i.id !== target.id)).toEqual(manifest.images.filter((i) => i.id !== target.id));
 
     const allAssets = new Map([...assets, ...fresh.assets]);
-    const back = await unpackFramenote(await packFramenote(out, async (p) => allAssets.get(p)!));
+    const back = await unpackFovea(await packFovea(out, async (p) => allAssets.get(p)!));
     expect(back.warnings).toEqual([]);
     expect(back.manifest.images.find((i) => i.id === target.id)!.asset).toBe(replacement.asset);
   });

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { addComment, updateUserNotes } from "@framenote/core";
+import { addComment, updateUserNotes } from "@fovea/core";
 import { App } from "../src/App";
 import { useAutosave } from "../src/hooks/useAutosave";
 import { fakePlatform, sampleManifest } from "./fakePlatform";
@@ -43,7 +43,7 @@ describe("autosave", () => {
 });
 
 describe("editor", () => {
-  beforeEach(() => localStorage.setItem("framenote.reviewMode", "1"));
+  beforeEach(() => localStorage.setItem("fovea.reviewMode", "1"));
 
   it("edits a caption, autosaves, and keeps camera data read-only", async () => {
     const manifest = sampleManifest(2);
@@ -104,7 +104,7 @@ describe("editor", () => {
   });
 
   it("removes the current photo from view mode with Delete or the top-bar button, after confirming", async () => {
-    localStorage.setItem("framenote.reviewMode", "0");
+    localStorage.setItem("fovea.reviewMode", "0");
     const manifest = sampleManifest(3);
     const [first, second, third] = manifest.images;
     const { platform, store } = fakePlatform([manifest]);
@@ -167,7 +167,7 @@ describe("editor", () => {
   });
 
   it("opens in view mode with only the photo, and R toggles review panels", async () => {
-    localStorage.setItem("framenote.reviewMode", "0");
+    localStorage.setItem("fovea.reviewMode", "0");
     const manifest = sampleManifest(3);
     const { platform } = fakePlatform([manifest]);
     location.hash = `#/a/${manifest.assignmentId}`;
@@ -178,11 +178,11 @@ describe("editor", () => {
     expect(screen.getByRole("list", { name: "Images in this project" })).toBeInTheDocument();
     await user.keyboard("r");
     expect(await screen.findByRole("textbox", { name: "Caption" })).toBeInTheDocument();
-    expect(localStorage.getItem("framenote.reviewMode")).toBe("1");
+    expect(localStorage.getItem("fovea.reviewMode")).toBe("1");
   });
 
   it("swipes between photos on the main stage", async () => {
-    localStorage.setItem("framenote.reviewMode", "0");
+    localStorage.setItem("fovea.reviewMode", "0");
     const manifest = sampleManifest(3);
     const { platform } = fakePlatform([manifest]);
     location.hash = `#/a/${manifest.assignmentId}`;
@@ -207,7 +207,7 @@ describe("editor", () => {
   });
 
   it("lists keyboard shortcuts with ? or the button, and blocks other keys while open", async () => {
-    localStorage.setItem("framenote.reviewMode", "0");
+    localStorage.setItem("fovea.reviewMode", "0");
     const manifest = sampleManifest(3);
     const { platform } = fakePlatform([manifest]);
     location.hash = `#/a/${manifest.assignmentId}`;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Manifest } from "@framenote/core";
+import type { Manifest } from "@fovea/core";
 
 export type SaveStatus = { state: "saved" } | { state: "pending" } | { state: "saving" } | { state: "error"; message: string };
 

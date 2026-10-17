@@ -1,7 +1,7 @@
 import { strFromU8 } from "fflate";
-import { LIMITS, unsafePathReason, type ImportWarning, type Limits, type UnpackedFramenote } from "./archive";
+import { LIMITS, unsafePathReason, type ImportWarning, type Limits, type UnpackedFovea } from "./archive";
 import { sha256Hex } from "./checksum";
-import { FramenoteError, parseManifest } from "./validate";
+import { FoveaError, parseManifest } from "./validate";
 
 /** One file inside a folder the user picked. `path` is relative to the picked folder, using "/" or "\". */
 export interface FolderFile {
@@ -25,20 +25,20 @@ export function findProjectRoot(paths: string[]): string | null {
   if (!first) return null;
   const tied = manifests.filter((m) => depth(m) === depth(first));
   if (tied.length > 1) {
-    throw new FramenoteError(
+    throw new FoveaError(
       "This folder contains more than one project. Choose the folder of the project you want, the one that holds manifest.json.",
-      "not-a-framenote",
+      "not-a-fovea",
     );
   }
   return first.slice(0, -"manifest.json".length);
 }
 
 /**
- * Imports an unzipped .framenote: a folder with manifest.json and assets/. Unlike a ZIP, a folder may have picked up
+ * Imports an unzipped .fovea: a folder with manifest.json and assets/. Unlike a ZIP, a folder may have picked up
  * stray files or lost some, so unreferenced files are ignored and images whose files are missing are dropped, both
  * with a warning.
  */
-export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS): Promise<UnpackedFramenote> {
+export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS): Promise<UnpackedFovea> {
   const files = input
     .map((f) => ({ ...f, path: f.path.replace(/\\/g, "/").replace(/^\/+/, "") }))
     .filter((f) => f.path && !JUNK.test(f.path));
@@ -46,14 +46,14 @@ export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS)
   if (root === null) {
     const tops = new Set(files.map((f) => f.path.split("/").slice(-2, -1)[0]?.toLowerCase()));
     if ([...tops].every((t) => t === "assets" || t === "images" || t === "thumbnails")) {
-      throw new FramenoteError(
+      throw new FoveaError(
         "This looks like the assets folder inside a project. Choose the folder one level up, the one that contains manifest.json.",
-        "not-a-framenote",
+        "not-a-fovea",
       );
     }
-    throw new FramenoteError(
-      "This folder has no manifest.json, so it is not an unzipped Frame Note project. Choose the folder that contains manifest.json and assets/.",
-      "not-a-framenote",
+    throw new FoveaError(
+      "This folder has no manifest.json, so it is not an unzipped Fovea project. Choose the folder that contains manifest.json and assets/.",
+      "not-a-fovea",
     );
   }
 
@@ -62,22 +62,22 @@ export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS)
     if (!f.path.startsWith(root)) continue;
     const rel = f.path.slice(root.length);
     const reason = unsafePathReason(rel);
-    if (reason) throw new FramenoteError(`Rejected unsafe file "${rel}": ${reason}.`, "unsafe-path");
+    if (reason) throw new FoveaError(`Rejected unsafe file "${rel}": ${reason}.`, "unsafe-path");
     byPath.set(lower(rel), { ...f, path: rel });
   }
   if (byPath.size > limits.maxEntries) {
-    throw new FramenoteError(`The folder has ${byPath.size} files; the limit is ${limits.maxEntries}.`, "limits-exceeded");
+    throw new FoveaError(`The folder has ${byPath.size} files; the limit is ${limits.maxEntries}.`, "limits-exceeded");
   }
 
   const manifestFile = byPath.get("manifest.json")!;
   if (manifestFile.size > limits.maxManifestBytes) {
-    throw new FramenoteError("manifest.json is larger than the 8 MB limit.", "limits-exceeded");
+    throw new FoveaError("manifest.json is larger than the 8 MB limit.", "limits-exceeded");
   }
   let json: unknown;
   try {
     json = JSON.parse(strFromU8(await manifestFile.read()));
   } catch {
-    throw new FramenoteError("manifest.json is not valid JSON.", "invalid-manifest");
+    throw new FoveaError("manifest.json is not valid JSON.", "invalid-manifest");
   }
   const parsed = parseManifest(json);
 
@@ -94,14 +94,14 @@ export async function unpackFolder(input: FolderFile[], limits: Limits = LIMITS)
       continue;
     }
     for (const f of [asset, thumb]) {
-      if (f.size > limits.maxEntryBytes) throw new FramenoteError(`"${f.path}" is larger than the per-file limit.`, "limits-exceeded");
+      if (f.size > limits.maxEntryBytes) throw new FoveaError(`"${f.path}" is larger than the per-file limit.`, "limits-exceeded");
       total += f.size;
       used.add(lower(f.path));
     }
     kept.push({ img, asset, thumb });
   }
   if (total > limits.maxTotalUncompressedBytes) {
-    throw new FramenoteError("The project is larger than the import size limit.", "limits-exceeded");
+    throw new FoveaError("The project is larger than the import size limit.", "limits-exceeded");
   }
   const ignored = [...byPath.keys()].filter((k) => !used.has(k)).length;
   if (ignored) warnings.push({ message: `${ignored} other ${ignored === 1 ? "file" : "files"} in the folder ${ignored === 1 ? "was" : "were"} ignored.` });

@@ -39,8 +39,8 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm --filter @framenote/core test
-      - run: pnpm --filter @framenote/ui test
+      - run: pnpm --filter @fovea/core test
+      - run: pnpm --filter @fovea/ui test
 
   web:
     needs: test
@@ -57,7 +57,7 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - name: Build web app
-        run: pnpm --filter @framenote/web build
+        run: pnpm --filter @fovea/web build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
       - uses: actions/configure-pages@v5
@@ -111,7 +111,7 @@ jobs:
           args: --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: framenote-${{ matrix.label }}
+          name: fovea-${{ matrix.label }}
           path: |
             apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
             apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
-        with: { path: dist, pattern: framenote-*, merge-multiple: true }
+        with: { path: dist, pattern: fovea-*, merge-multiple: true }
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +143,7 @@ jobs:
             [ ${#found[@]} -gt 0 ] || missing="$missing- ${p#*:}"$'\n'
           done
           {
-            echo "Frame Note $version, built from \`${GITHUB_SHA::7}\`. These builds are not signed."
+            echo "Fovea $version, built from \`${GITHUB_SHA::7}\`. These builds are not signed."
             echo
             echo "| Download | For |"
             echo "|---|---|"
@@ -152,11 +152,11 @@ jobs:
             echo "| \`…_x64-setup.exe\` | Windows, 64-bit (most PCs) |"
             echo "| \`…_x86-setup.exe\` | Windows, 32-bit |"
             echo
-            echo "**Mac:** open the .dmg and drag Frame Note to Applications. Then run this once in Terminal:"
-            echo '`xattr -dr com.apple.quarantine "/Applications/Frame Note.app"`'
+            echo "**Mac:** open the .dmg and drag Fovea to Applications. Then run this once in Terminal:"
+            echo '`xattr -dr com.apple.quarantine "/Applications/Fovea.app"`'
             echo
             echo "**Windows:** if SmartScreen appears, click **More info → Run anyway**."
             if [ -n "$missing" ]; then echo; echo "Not in this release because its build failed:"; printf '%s' "$missing"; fi
           } > notes.md
           gh release create "$tag" "${files[@]}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Frame Note $tag" --notes-file notes.md --latest
+            --title "Fovea $tag" --notes-file notes.md --latest

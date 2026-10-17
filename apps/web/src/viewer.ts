@@ -1,6 +1,6 @@
 import exifr from "exifr";
-import { detectSourceKind, extensionOf, largestEmbeddedJpeg, orientationHeader, rawImageSize } from "@framenote/core";
-import type { FolderPhoto, FolderViewer, ImportProgress, AddImagesResult, PhotoFolder, RecentFolder, ViewablePhoto } from "@framenote/ui";
+import { detectSourceKind, extensionOf, largestEmbeddedJpeg, orientationHeader, rawImageSize } from "@fovea/core";
+import type { FolderPhoto, FolderViewer, ImportProgress, AddImagesResult, PhotoFolder, RecentFolder, ViewablePhoto } from "@fovea/ui";
 import { readMetadata } from "./process";
 
 /** The parts of the File System Access API used here (Chromium only; not in TypeScript's DOM lib). */
@@ -96,7 +96,7 @@ export class WebViewer implements FolderViewer {
     if (picker) {
       let dir: DirectoryHandle;
       try {
-        dir = await picker({ id: "framenote-photos", mode: "read" });
+        dir = await picker({ id: "fovea-photos", mode: "read" });
       } catch (e) {
         if ((e as DOMException).name === "AbortError") return null;
         throw e;

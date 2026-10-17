@@ -14,8 +14,8 @@ export default defineConfig({
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "icon.svg", "apple-touch-icon-180x180.png"],
       manifest: {
-        name: "Frame Note",
-        short_name: "Frame Note",
+        name: "Fovea",
+        short_name: "Fovea",
         description: "Present and review wildlife photographs with their camera data.",
         theme_color: "#151515",
         background_color: "#151515",

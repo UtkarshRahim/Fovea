@@ -1,6 +1,6 @@
 # Licences
 
-Frame Note itself is MIT licensed (see `LICENSE`).
+Fovea itself is MIT licensed (see `LICENSE`).
 
 ## Bundled with the desktop app
 
