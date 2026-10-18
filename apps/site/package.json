@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@fontsource/instrument-sans": "^5.3.0",
-    "@fontsource/newsreader": "^5.3.0"
+    "@fontsource/libre-franklin": "^5.3.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

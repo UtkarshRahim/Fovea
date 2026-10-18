@@ -77,7 +77,7 @@ export async function ensureFontsLoaded(): Promise<void> {
   await Promise.all([
     document.fonts.load('400 16px "IBM Plex Mono"'),
     document.fonts.load('500 16px "IBM Plex Mono"'),
-    document.fonts.load('500 16px "IBM Plex Sans"'),
+    document.fonts.load('500 16px "Libre Franklin"'),
     document.fonts.load('italic 400 16px "Newsreader"'),
   ]).catch(() => undefined);
 }

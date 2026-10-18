@@ -53,10 +53,7 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/instrument-sans':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/newsreader':
+      '@fontsource/libre-franklin':
         specifier: ^5.3.0
         version: 5.3.0
     devDependencies:
@@ -158,7 +155,7 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/instrument-sans':
+      '@fontsource/libre-franklin':
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/newsreader':
@@ -1025,8 +1022,8 @@ packages:
   '@fontsource/ibm-plex-mono@5.3.0':
     resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
 
-  '@fontsource/instrument-sans@5.3.0':
-    resolution: {integrity: sha512-QwXc4hb/px3XvSPS2CPAOgey8nyrQFxgxrmXQQ+pN+P51hKdAcchxpg8rSbjANFfPu6VKXhDqkVDucXMZ9CM5g==}
+  '@fontsource/libre-franklin@5.3.0':
+    resolution: {integrity: sha512-owd+HDvD4hnGHG1jO3rHtg0BiNT0DJbZMaSqJ7g4r0646G5Q91MjTFWxZbpwg8njLu4BSH3EBqwkVSMLud6brg==}
 
   '@fontsource/newsreader@5.3.0':
     resolution: {integrity: sha512-AFR6ZKY89GNL+9qBI2P2+66NhD5bhOj/v6fsLnFYLM4E0JnMB1yKb+Ro8cA64i1hwAWoBfTq5CHJGWH1toLDkw==}
@@ -4674,7 +4671,7 @@ snapshots:
 
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
-  '@fontsource/instrument-sans@5.3.0': {}
+  '@fontsource/libre-franklin@5.3.0': {}
 
   '@fontsource/newsreader@5.3.0': {}
 

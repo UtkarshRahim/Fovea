@@ -14,7 +14,7 @@ export interface FontSpec {
 
 export const FONT_STACKS: Record<FontFamily, string> = {
   mono: '"IBM Plex Mono", ui-monospace, monospace',
-  sans: '"IBM Plex Sans", system-ui, sans-serif',
+  sans: '"Libre Franklin", system-ui, sans-serif',
   serif: '"Newsreader", Georgia, serif',
 };
 

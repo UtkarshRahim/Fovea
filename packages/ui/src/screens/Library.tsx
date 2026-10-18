@@ -128,40 +128,17 @@ export function Library() {
         ) : items.length === 0 ? (
           <div className="welcome">
             <section className="welcome-hero" aria-labelledby="welcome-h">
-              <p className="eyebrow">Welcome</p>
-              <h2 id="welcome-h">
-                Welcome to <em>Fovea</em>
-              </h2>
+              <h2 id="welcome-h">Welcome to Fovea</h2>
               <p className="welcome-lede">
-                Bring your fieldwork in from the card, see exactly what the camera saw, and present it the way it deserves — fullscreen,
-                captioned, with the settings that made the shot.
+                Fovea shows your photographs with the camera data that made them. Put a set of photographs in a project, write a
+                caption for each one, and present them fullscreen. You can send the whole project to someone as a single file.
               </p>
-              <ul className="welcome-points">
-                <li>
-                  <span className="mono">01</span>
-                  <p>
-                    <strong>Open</strong> RAW, JPEG or TIFF straight from your folders.
-                  </p>
-                </li>
-                <li>
-                  <span className="mono">02</span>
-                  <p>
-                    <strong>Caption</strong> each frame, with camera data read for you.
-                  </p>
-                </li>
-                <li>
-                  <span className="mono">03</span>
-                  <p>
-                    <strong>Present</strong> fullscreen, or share it all as one <span className="mono">.fovea</span> file.
-                  </p>
-                </li>
-              </ul>
             </section>
             <div className="empty">
               <h3>No projects yet</h3>
               <p>
-                Create a project and add photographs
-                {platform.capabilities.rawImport ? " — RAW files (NEF, CR2, CR3, ARW), JPEG or TIFF" : " — JPEG, or RAW files using their embedded preview"}.
+                Create a project and add photographs. Fovea reads
+                {platform.capabilities.rawImport ? " RAW files (NEF, CR2, CR3, ARW), JPEG and TIFF" : " JPEG, and RAW files through their embedded preview"}.
                 Or import a <span className="mono">.fovea</span> file someone shared with you
                 {platform.capabilities.projectFolderImport ? ", or a folder you unzipped from one" : ""}.
               </p>
@@ -176,15 +153,14 @@ export function Library() {
         ) : (
           <section className="projects" aria-labelledby="projects-h">
             <div className="library-hero">
-              <p className="eyebrow">Library</p>
               <h2 id="projects-h">Projects</h2>
               <p className="muted">
-                {items.length} {items.length === 1 ? "project" : "projects"} · {items.reduce((n, a) => n + a.imageCount, 0)} photographs
+                {items.length} {items.length === 1 ? "project" : "projects"}, {items.reduce((n, a) => n + a.imageCount, 0)} photographs
               </p>
             </div>
             <ul className="project-grid" aria-label="Projects">
-              {items.map((a, i) => (
-                <AssignmentCard key={a.id} item={a} index={i} onRename={() => setRenaming(a)} onDelete={() => setDeleting(a)} />
+              {items.map((a) => (
+                <AssignmentCard key={a.id} item={a} onRename={() => setRenaming(a)} onDelete={() => setDeleting(a)} />
               ))}
             </ul>
           </section>
@@ -192,7 +168,7 @@ export function Library() {
         <RecentFolders />
         <footer className="library-foot small muted">
           Photographs stay on this {platform.kind === "web" ? "device, in this browser" : "computer"}. Nothing is uploaded.
-          {platform.kind === "web" ? " Browsers can clear stored data — export a .fovea as your backup." : ""}
+          {platform.kind === "web" ? " Browsers sometimes clear stored data, so export a .fovea file as a backup." : ""}
           {storage ? (
             <>
               {" "}
@@ -256,21 +232,11 @@ export function Library() {
   );
 }
 
-function AssignmentCard({
-  item,
-  index,
-  onRename,
-  onDelete,
-}: {
-  item: AssignmentSummary;
-  index: number;
-  onRename: () => void;
-  onDelete: () => void;
-}) {
+function AssignmentCard({ item, onRename, onDelete }: { item: AssignmentSummary; onRename: () => void; onDelete: () => void }) {
   const cover = useAssetUrl(item.id, item.coverThumbnail);
   const open = () => navigate({ name: "editor", id: item.id });
   return (
-    <li className="project-card" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
+    <li className="project-card">
       <button type="button" className="project-cover" onClick={open} aria-label={`Open ${item.title}`}>
         {cover ? <img src={cover} alt="" loading="lazy" /> : <span className="cover-empty" />}
       </button>
