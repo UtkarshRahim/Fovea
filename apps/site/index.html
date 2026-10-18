@@ -36,6 +36,7 @@
         <span>Fovea</span>
       </a>
       <nav class="nav-links" aria-label="Main">
+        <a href="#playground" class="hide-sm">Camera playground</a>
         <a href="#download">Download</a>
         <a href="#about" class="hide-sm">About</a>
         <a href="https://github.com/UtkarshRahim/Fovea" class="hide-sm" target="_blank" rel="noopener">GitHub</a>
@@ -134,18 +135,18 @@
       <section class="wide wrap" aria-labelledby="f3-h">
         <figure>
           <img
-            src="/photos/lake-1200.jpg"
-            srcset="/photos/lake-1200.jpg 1200w, /photos/lake-2400.jpg 2400w"
+            src="/photos/lake-still-1200.jpg"
+            srcset="/photos/lake-still-1200.jpg 1200w, /photos/lake-still-2400.jpg 2400w"
             sizes="(min-width: 1180px) 1100px, 100vw"
             width="1200"
-            height="825"
-            alt="A wide lake under a pale sky, with a tiger walking along the near shore"
+            height="800"
+            alt="A tiger walking along the edge of a still lake, with trees reflected in the water"
             loading="lazy"
             decoding="async"
           />
           <figcaption class="exif">
-            <span class="exif-title">Lake, with a tiger on the shore</span>
-            <span class="exif-data">NIKON Z 9 · 70–200mm at 70mm · f/4 · 1/800 s · ISO 64</span>
+            <span class="exif-title">Tiger by a still lake</span>
+            <span class="exif-data">NIKON Z 9 · 70–200mm at 70mm · f/2.8 · 1/1250 s · ISO 64</span>
           </figcaption>
         </figure>
         <div class="wide-text">
@@ -155,6 +156,70 @@
             a Windows PC, or a phone's browser. There are no accounts and nothing is uploaded. Once it has loaded, it works offline.
           </p>
         </div>
+      </section>
+
+      <section class="play wrap" id="playground" aria-labelledby="play-h" data-play>
+        <div class="play-head">
+          <h2 id="play-h">Camera playground</h2>
+          <p class="muted">
+            This photograph was taken at f/4, 1/800 s and ISO 64. Change the aperture, shutter speed and ISO to see how it would have come out,
+            and click anywhere on it to focus there.
+          </p>
+        </div>
+
+        <div class="play-frame" data-play-frame>
+          <img src="/photos/lake-1200.jpg" width="1200" height="825" alt="" decoding="async" loading="lazy" />
+          <canvas role="img" aria-label="The lake photograph, re-rendered with the chosen camera settings"></canvas>
+          <span class="play-af" aria-hidden="true" data-play-af></span>
+        </div>
+
+        <div class="play-status">
+          <p aria-live="polite">
+            <span data-play-focus>Focused on the tiger, about 30 m away</span>
+            <span class="play-dof muted" data-play-dof></span>
+          </p>
+          <div class="ev" aria-label="Exposure compared with the original">
+            <span class="ev-end">−</span>
+            <span class="meter" data-meter></span>
+            <span class="ev-end">+</span>
+            <output data-ev>0.0</output>
+          </div>
+        </div>
+
+        <div class="play-controls">
+          <label class="ctl">
+            <span class="ctl-name">Aperture</span>
+            <output data-out="aperture">f/4</output>
+            <input type="range" min="0" step="1" data-ctl="aperture" />
+            <span class="ctl-hint">Lower numbers let in more light but keep less of the scene sharp. Higher numbers keep more in focus.</span>
+          </label>
+          <label class="ctl">
+            <span class="ctl-name">Shutter speed</span>
+            <output data-out="shutter">1/800 s</output>
+            <input type="range" min="0" step="1" data-ctl="shutter" />
+            <span class="ctl-hint">Slower speeds let in more light, and the walking tiger starts to smear.</span>
+          </label>
+          <label class="ctl">
+            <span class="ctl-name">ISO</span>
+            <output data-out="iso">ISO 64</output>
+            <input type="range" min="0" step="1" data-ctl="iso" />
+            <span class="ctl-hint">Higher ISO brightens the picture and adds grain.</span>
+          </label>
+        </div>
+
+        <div class="play-actions">
+          <span class="muted">Focus on</span>
+          <button type="button" data-focus-at="0.25,0.81">the tiger</button>
+          <button type="button" data-focus-at="0.55,0.5">the island</button>
+          <button type="button" data-focus-at="0.62,0.33">the hills</button>
+          <button type="button" data-focus-at="0.6,0.95">the near bank</button>
+          <button type="button" class="play-reset" data-play-reset>Reset</button>
+        </div>
+        <p class="play-fallback muted">Your browser doesn't support WebGL 2, which this needs.</p>
+        <p class="play-note muted">
+          This is a playground, not a simulation. The blur, motion and grain are exaggerated approximations made from a single photograph, so
+          a real camera won't produce exactly these results.
+        </p>
       </section>
 
       <section class="download wrap" id="download" aria-labelledby="download-h">

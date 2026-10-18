@@ -3,6 +3,7 @@ import "@fontsource/libre-franklin/500.css";
 import "@fontsource/libre-franklin/600.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "./style.css";
+import { initPlayground } from "./playground";
 
 const REPO = "UtkarshRahim/Fovea";
 const APP_URL = import.meta.env.VITE_APP_URL ?? (import.meta.env.DEV ? "https://fovea-483.pages.dev/app/" : `${import.meta.env.BASE_URL}app/`);
@@ -101,3 +102,6 @@ if (frame && af) {
   });
   void Promise.all([ready, seen]).then(() => setTimeout(start, 400));
 }
+
+const play = $("[data-play]");
+if (play) initPlayground(play);
