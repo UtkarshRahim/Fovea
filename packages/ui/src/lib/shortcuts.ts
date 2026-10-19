@@ -59,6 +59,7 @@ export function shortcutGroups(): ShortcutGroup[] {
         ...zoomKeys,
         focusKey,
         { keys: ["O"], action: "Camera data on / off" },
+        { keys: ["I"], action: "Choose what shows on the photo" },
         { keys: ["V"], action: "Camera data horizontal / vertical" },
         { keys: ["F"], action: "Fullscreen on / off" },
         { keys: ["Esc"], action: "Fit to screen, then leave fullscreen" },

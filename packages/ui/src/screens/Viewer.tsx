@@ -1,16 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DropdownMenu } from "radix-ui";
-import { ArrowLeft, ChevronDown, FolderPlus, ImagePlus, Maximize, Minimize, Plus, Type } from "lucide-react";
-import {
-  appendImages,
-  extensionOf,
-  OverlaySettingsSchema,
-  type AssignmentSummary,
-  type CameraMetadata,
-  type ImageEntry,
-  type Manifest,
-  type OverlaySettings,
-} from "@fovea/core";
+import { ArrowLeft, ChevronDown, FolderPlus, ImagePlus, Maximize, Minimize, Plus, SlidersHorizontal, Type } from "lucide-react";
+import { appendImages, extensionOf, type AssignmentSummary, type CameraMetadata, type ImageEntry, type Manifest } from "@fovea/core";
 import { usePlatform, type FolderPhoto, type FolderViewer, type ImportProgress, type PhotoFolder, type ViewablePhoto } from "../platform";
 import { navigate } from "../lib/router";
 import { hasModifier, isTypingTarget } from "../lib/keys";
@@ -22,7 +13,9 @@ import { OverlayCanvas } from "../components/OverlayCanvas";
 import { OpenPhotosButton, RecentFolders } from "../components/RecentFolders";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { useToast } from "../components/Toasts";
+import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { useFocusPoints } from "../hooks/useFocusPoints";
+import { usePresentation } from "../hooks/usePresentation";
 import { describeError, TitleDialog } from "./Library";
 
 export function Viewer() {
@@ -72,7 +65,6 @@ type Shown = ({ name: string } & Ready) | { name: string; error: string };
 
 const CACHE_SIZE = 8;
 const OVERLAY_KEY = "fovea.viewerOverlay";
-const DIRECTION_KEY = "fovea.viewerOverlayDirection";
 
 function sourceLabel(name: string, source: ViewablePhoto["source"]) {
   const ext = extensionOf(name).toUpperCase();
@@ -127,9 +119,8 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
   const [showFocus, toggleFocus] = useFocusPoints();
   const [overlayOn, setOverlayOn] = useState(() => localStorage.getItem(OVERLAY_KEY) === "1");
-  const [direction, setDirection] = useState<OverlaySettings["direction"]>(() =>
-    localStorage.getItem(DIRECTION_KEY) === "vertical" ? "vertical" : "horizontal",
-  );
+  const [presentation, setPresentation] = usePresentation();
+  const [picker, setPicker] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [shortcuts, setShortcuts] = useState(false);
   const [progress, setProgress] = useState<ImportProgress | null>(null);
@@ -140,7 +131,6 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
   const photo = photos[index];
 
   useEffect(() => localStorage.setItem(OVERLAY_KEY, overlayOn ? "1" : "0"), [overlayOn]);
-  useEffect(() => localStorage.setItem(DIRECTION_KEY, direction), [direction]);
 
   useEffect(() => {
     const c = cache.current;
@@ -230,7 +220,7 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTypingTarget(e.target) || hasModifier(e) || shortcuts || naming) return;
+      if (isTypingTarget(e.target) || hasModifier(e) || shortcuts || naming || picker) return;
       const key = e.key.toLowerCase();
       if (e.key === "ArrowRight" || e.key === "ArrowDown") go(index + 1);
       else if (e.key === "ArrowLeft" || e.key === "ArrowUp") go(index - 1);
@@ -241,8 +231,9 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
       else if (e.key === "0") stage.current?.resetZoom();
       else if (key === "a") toggleFocus();
       else if (key === "o") setOverlayOn((v) => !v);
+      else if (key === "i") setPicker(true);
       else if (key === "v") {
-        setDirection((d) => (d === "vertical" ? "horizontal" : "vertical"));
+        setPresentation(toggleDirection);
         setOverlayOn(true);
       } else if (key === "f") void toggleFullscreen();
       else if (e.key === "?") setShortcuts(true);
@@ -255,9 +246,10 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, index, photos.length, toggleFocus, toggleFullscreen, shortcuts, naming, zoom.scale, fullscreen, platform]);
+  }, [go, index, photos.length, toggleFocus, toggleFullscreen, shortcuts, naming, picker, zoom.scale, fullscreen, platform, setPresentation]);
 
-  const overlay = useMemo(() => OverlaySettingsSchema.parse({ showTitle: false, showCaption: false, direction }), [direction]);
+  /* Loose photos have no caption or species line, only camera data. */
+  const overlay = useMemo(() => ({ ...presentation.overlay, showTitle: false, showCaption: false }), [presentation.overlay]);
   const metadata = meta && meta.name === shown?.name ? meta.metadata : undefined;
   const focusAreas = metadata?.focusAreas;
   const entry = useMemo(() => (shown && metadata ? entryFor(shown.name, metadata) : undefined), [shown, metadata]);
@@ -310,6 +302,9 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
   return (
     <div className={`viewer ${fullscreen ? "is-fullscreen" : ""}`}>
       <ViewerTopbar folder={folder} photo={photo} index={index} source={ready && ready.name === photo?.name ? ready.source : undefined}>
+        <Button variant="ghost" onClick={() => setPicker((v) => !v)} aria-pressed={picker} title="Show on photo (I)">
+          <SlidersHorizontal size={16} /> <span className="hide-sm">Show on photo</span>
+        </Button>
         <AddToProjectMenu disabled={!!progress} count={photos.length} onAdd={(p) => void addTo(p.id, photo ? [photo] : [], false)} onNew={setNaming} />
         <OpenPhotosButton compact />
         <ShortcutsButton onClick={() => setShortcuts(true)} />
@@ -369,6 +364,16 @@ function ViewerInner({ viewer, folder }: { viewer: FolderViewer; folder: PhotoFo
               </Button>
             ) : null}
           </div>
+        ) : null}
+        {picker ? (
+          <FieldPicker
+            presentation={presentation}
+            onChange={(next) => {
+              setPresentation(() => next);
+              setOverlayOn(next.overlay.visible);
+            }}
+            onClose={() => setPicker(false)}
+          />
         ) : null}
       </section>
 

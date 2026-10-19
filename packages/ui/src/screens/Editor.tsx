@@ -26,6 +26,7 @@ import { ExportBundleDialog, ExportImageDialog } from "../components/ExportDialo
 import { useToast } from "../components/Toasts";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { useFocusPoints } from "../hooks/useFocusPoints";
+import { usePresentation } from "../hooks/usePresentation";
 import { describeError, TitleDialog } from "./Library";
 
 export function Editor({ id, imageId }: { id: string; imageId?: string }) {
@@ -91,6 +92,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
   const [author, setAuthor] = useState(() => localStorage.getItem(AUTHOR_KEY) ?? "");
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
   const [showFocus, toggleFocus] = useFocusPoints();
+  const [presentation, setPresentation] = usePresentation(initial.presentation);
   const stage = useRef<PhotoStageHandle>(null);
   const aid = manifest.assignmentId;
   const commentCount = useMemo(() => images.reduce((n, i) => n + i.comments.length, 0), [images]);
@@ -184,7 +186,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") goTo(selectedIndex - 1);
       else if (key === "r") setReview((v) => !v);
       else if (key === "i") setPicker(true);
-      else if (key === "v") update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
+      else if (key === "v") setPresentation(toggleDirection);
       else if (key === "p" && images.length) void present();
       else if (key === "a") toggleFocus();
       else if ((e.key === "Delete" || e.key === "Backspace") && selected) setRemoving(selected.id);
@@ -197,7 +199,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo, images.length, selectedIndex, selected, picker, shortcuts, removing, present, update, toggleFocus]);
+  }, [goTo, images.length, selectedIndex, selected, picker, shortcuts, removing, present, setPresentation, toggleFocus]);
 
   const addButtons = (
     <>
@@ -228,11 +230,13 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
         {review || status.state === "error" ? <SaveIndicator status={status} /> : null}
         <div className="topbar-actions">
           {addButtons}
+          {selected ? (
+            <Button variant="ghost" onClick={() => setPicker((v) => !v)} aria-pressed={picker} title="Show on photo (I)">
+              <SlidersHorizontal size={16} /> <span className="hide-sm">Show on photo</span>
+            </Button>
+          ) : null}
           {review ? (
             <>
-              <Button variant="ghost" onClick={() => setPicker((v) => !v)} aria-pressed={picker} title="Show on photo (I)">
-                <SlidersHorizontal size={16} /> <span className="hide-sm">Show on photo</span>
-              </Button>
               <Button variant="ghost" disabled={!selected} onClick={() => setExportImage(true)} title="Export image">
                 <Download size={16} /> <span className="hide-sm">Export image</span>
               </Button>
@@ -283,8 +287,8 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                 assignmentId={aid}
                 image={selected}
                 fitMode="contain"
-                overlay={manifest.presentation.overlay}
-                showOverlay={manifest.presentation.overlay.visible}
+                overlay={presentation.overlay}
+                showOverlay={presentation.overlay.visible}
                 minOverlayScale={0.5}
                 onSwipe={(d) => goTo(selectedIndex + d)}
                 onZoomChange={setZoom}
@@ -307,7 +311,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
               <p className="small">
                 {platform.capabilities.rawImport
                   ? "Add RAW (NEF, CR2, CR3, ARW), JPEG or TIFF files, or drop them here. Originals are never modified."
-                  : "Add photos from this device. JPEG works everywhere; RAW files show the camera's embedded preview."}
+                  : "Add JPEG, TIFF or PNG photos from this device. RAW files show the camera's embedded preview."}
               </p>
               <div className="empty-actions">{addButtons}</div>
             </div>
@@ -315,8 +319,8 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
           <ImportStatus progress={progress} failures={failures} onCancel={() => platform.cancelAddImages()} onDismiss={() => setFailures([])} />
           {picker ? (
             <FieldPicker
-              presentation={manifest.presentation}
-              onChange={(presentation) => update((m) => ({ ...m, presentation, modifiedAt: new Date().toISOString() }))}
+              presentation={presentation}
+              onChange={(next) => setPresentation(() => next)}
               onClose={() => setPicker(false)}
             />
           ) : null}

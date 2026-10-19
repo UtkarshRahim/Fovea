@@ -1,7 +1,7 @@
 import exifr from "exifr";
 import { detectSourceKind, extensionOf, largestEmbeddedJpeg, orientationHeader, rawImageSize } from "@fovea/core";
 import type { FolderPhoto, FolderViewer, ImportProgress, AddImagesResult, PhotoFolder, RecentFolder, ViewablePhoto } from "@fovea/ui";
-import { readMetadata } from "./process";
+import { displayableTiff, readMetadata } from "./process";
 
 /** The parts of the File System Access API used here (Chromium only; not in TypeScript's DOM lib). */
 interface DirectoryHandle {
@@ -162,7 +162,15 @@ export class WebViewer implements FolderViewer {
   async loadPhoto(folder: PhotoFolder, photo: FolderPhoto): Promise<ViewablePhoto> {
     const file = await this.file(folder, photo);
     const head = new Uint8Array(await file.slice(0, 64).arrayBuffer());
-    if (detectSourceKind(file.name, head) !== "raw") return { blob: file, source: "original" };
+    const kind = detectSourceKind(file.name, head);
+    if (kind === "tiff") {
+      const orientation = (await exifr.orientation(file).catch(() => undefined)) ?? 1;
+      const converted = await displayableTiff(file, orientation).catch(() => {
+        throw new Error("This TIFF file could not be read in the browser. Try the Fovea desktop app, or save it as a JPEG.");
+      });
+      return converted ? { blob: converted, source: "converted" } : { blob: file, source: "original" };
+    }
+    if (kind !== "raw") return { blob: file, source: "original" };
     const preview = largestEmbeddedJpeg(new Uint8Array(await file.arrayBuffer()));
     if (!preview) throw new Error(`No embedded preview was found in this ${extensionOf(file.name).toUpperCase() || "RAW"} file.`);
     const orientation = (await exifr.orientation(file).catch(() => undefined)) ?? 1;

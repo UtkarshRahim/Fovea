@@ -2,6 +2,7 @@ import { useState } from "react";
 import { exportFilename, exportSize, type ImageEntry, type ImageExportOptions, type Manifest } from "@fovea/core";
 import { usePlatform } from "../platform";
 import { renderExport } from "../lib/draw";
+import { usePresentation } from "../hooks/usePresentation";
 import { Button, Checkbox, Dialog, Segmented, Slider } from "./primitives";
 
 const SIZES: { value: string; label: string }[] = [
@@ -25,6 +26,7 @@ export function ExportImageDialog({
   onDone: (message: string) => void;
 }) {
   const platform = usePlatform();
+  const [presentation] = usePresentation(manifest.presentation);
   const [format, setFormat] = useState<"jpeg" | "png">("jpeg");
   const [quality, setQuality] = useState(0.92);
   const [size, setSize] = useState("full");
@@ -44,7 +46,7 @@ export function ExportImageDialog({
       const bytes = await platform.readAsset(manifest.assignmentId, image.asset);
       const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: "image/jpeg" }));
       try {
-        const out = await renderExport(url, image, manifest.presentation.overlay, opts, platform.maxCanvasPixels);
+        const out = await renderExport(url, image, presentation.overlay, opts, platform.maxCanvasPixels);
         const saved = await platform.saveExportedImage(out.blob, exportFilename(image.originalFilename, format));
         if (saved) {
           onDone(`Exported ${out.width} × ${out.height} ${format.toUpperCase()} to ${saved.location}.`);
@@ -123,6 +125,7 @@ export function ExportBundleDialog({
   onDone: (message: string) => void;
 }) {
   const platform = usePlatform();
+  const [presentation] = usePresentation(manifest.presentation);
   const [includeGps, setIncludeGps] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -132,7 +135,7 @@ export function ExportBundleDialog({
     setBusy(true);
     setError(undefined);
     try {
-      const saved = await platform.exportFovea(manifest, { stripGps: !includeGps });
+      const saved = await platform.exportFovea({ ...manifest, presentation }, { stripGps: !includeGps });
       if (saved) {
         onDone(`Saved ${manifest.images.length} images to ${saved.location}.`);
         onOpenChange(false);

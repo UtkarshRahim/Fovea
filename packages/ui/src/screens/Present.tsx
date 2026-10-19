@@ -12,6 +12,7 @@ import { Button, IconButton } from "../components/primitives";
 import { ShortcutsButton, ShortcutsDialog } from "../components/ShortcutsDialog";
 import { focusLabel } from "../components/StageControls";
 import { useFocusPoints } from "../hooks/useFocusPoints";
+import { usePresentation } from "../hooks/usePresentation";
 import { describeError } from "./Library";
 
 const HINT_KEY = "fovea.presentHintSeen";
@@ -44,12 +45,13 @@ export function Present({ id, index, mode }: { id: string; index: number; mode: 
 
 export function PresentInner({ initial, index, mode }: { initial: Manifest; index: number; mode: "present" | "preview" }) {
   const platform = usePlatform();
-  const { manifest, update, flush } = useAutosave(initial, (m) => platform.saveAssignment(m));
+  const { manifest, flush } = useAutosave(initial, (m) => platform.saveAssignment(m));
   const images = useMemo(() => sortedImages(manifest), [manifest]);
   const count = images.length;
   const [i, setI] = useState(() => Math.min(index, Math.max(0, count - 1)));
-  const [overlayOn, setOverlayOn] = useState(mode === "present" ? manifest.presentation.overlay.visible : false);
-  const fit = manifest.presentation.fitMode;
+  const [presentation, setPresentation] = usePresentation(initial.presentation);
+  const [overlayOn, setOverlayOn] = useState(mode === "present" ? presentation.overlay.visible : false);
+  const fit = presentation.fitMode;
   const [picker, setPicker] = useState(false);
   const [controls, setControls] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
@@ -187,7 +189,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
           break;
         case "v":
         case "V":
-          update((m) => ({ ...m, presentation: toggleDirection(m.presentation), modifiedAt: new Date().toISOString() }));
+          setPresentation(toggleDirection);
           setOverlayOn(true);
           break;
         case "+":
@@ -218,7 +220,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts, update, toggleFocus]);
+  }, [count, exit, go, i, picker, platform, poke, toggleFullscreen, zoom.scale, shortcuts, setPresentation, toggleFocus]);
 
   const toggleControls = useCallback(() => {
     // A touch screen has no keyboard, so a tap is the only way back to the controls in fullscreen.
@@ -252,7 +254,7 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
         assignmentId={aid}
         image={image}
         fitMode={fit}
-        overlay={manifest.presentation.overlay}
+        overlay={presentation.overlay}
         showOverlay={overlayOn}
         className="present-stage"
         onSwipe={swipe}
@@ -313,9 +315,9 @@ export function PresentInner({ initial, index, mode }: { initial: Manifest; inde
       <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
       {picker ? (
         <FieldPicker
-          presentation={manifest.presentation}
-          onChange={(presentation) => {
-            update((m) => ({ ...m, presentation, modifiedAt: new Date().toISOString() }));
+          presentation={presentation}
+          onChange={(next) => {
+            setPresentation(() => next);
             setOverlayOn(true);
           }}
           onClose={() => setPicker(false)}

@@ -138,7 +138,7 @@ export function Library() {
               <h3>No projects yet</h3>
               <p>
                 Create a project and add photographs. Fovea reads
-                {platform.capabilities.rawImport ? " RAW files (NEF, CR2, CR3, ARW), JPEG and TIFF" : " JPEG, and RAW files through their embedded preview"}.
+                {platform.capabilities.rawImport ? " RAW files (NEF, CR2, CR3, ARW), JPEG and TIFF" : " JPEG, TIFF and PNG, and RAW files through their embedded preview"}.
                 Or import a <span className="mono">.fovea</span> file someone shared with you
                 {platform.capabilities.projectFolderImport ? ", or a folder you unzipped from one" : ""}.
               </p>

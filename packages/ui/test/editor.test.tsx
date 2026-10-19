@@ -88,7 +88,8 @@ describe("editor", () => {
     await user.keyboard("v");
     await user.click(document.body);
     await user.keyboard("v");
-    await waitFor(() => expect(store.get(manifest.assignmentId)!.presentation.overlay.direction).toBe("vertical"), { timeout: 2000 });
+    expect(JSON.parse(localStorage.getItem("fovea.presentation")!).overlay.direction).toBe("vertical");
+    await waitFor(() => expect(store.get(manifest.assignmentId)!.images.find((i) => i.order === 0)!.user.caption).toBe("v"), { timeout: 2000 });
     expect(store.get(manifest.assignmentId)!.images.find((i) => i.order === 0)!.user.caption).toBe("v");
   });
 
@@ -176,6 +177,9 @@ describe("editor", () => {
     expect(await screen.findByRole("button", { name: /Review/ })).toHaveAttribute("aria-pressed", "false");
     expect(screen.queryByRole("textbox", { name: "Caption" })).not.toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Images in this project" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Show on photo/ }));
+    expect(screen.getByRole("dialog", { name: "Show on photo" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Close panel" }));
     await user.keyboard("r");
     expect(await screen.findByRole("textbox", { name: "Caption" })).toBeInTheDocument();
     expect(localStorage.getItem("fovea.reviewMode")).toBe("1");
@@ -191,6 +195,25 @@ describe("editor", () => {
     fireEvent.pointerDown(stage, { clientX: 600, clientY: 300, pointerId: 1 });
     fireEvent.pointerUp(stage, { clientX: 300, clientY: 310, pointerId: 1 });
     expect(screen.getByText("2 / 3")).toBeInTheDocument();
+  });
+
+  it("uses one Show on photo setting for every project", async () => {
+    localStorage.setItem("fovea.reviewMode", "0");
+    const a = sampleManifest(1);
+    const b = { ...sampleManifest(1), title: "Kabini Dusk" };
+    const { platform } = fakePlatform([a, b]);
+    location.hash = `#/a/${a.assignmentId}`;
+    const { unmount } = render(<App platform={platform} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /Show on photo/ }));
+    expect(screen.getByRole("checkbox", { name: "Lens" })).not.toBeChecked();
+    await user.click(screen.getByRole("checkbox", { name: "Lens" }));
+    unmount();
+
+    location.hash = `#/a/${b.assignmentId}`;
+    render(<App platform={platform} />);
+    await user.click(await screen.findByRole("button", { name: /Show on photo/ }));
+    expect(screen.getByRole("checkbox", { name: "Lens" })).toBeChecked();
   });
 
   it("switches project from the title menu", async () => {

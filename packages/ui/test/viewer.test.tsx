@@ -77,6 +77,18 @@ describe("folder viewer", () => {
     expect(viewer.loadPhoto).toHaveBeenCalledTimes(3);
   });
 
+  it("opens Show on photo and saves choices to the setting projects use", async () => {
+    setup();
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /Show on photo/ }));
+    expect(screen.getByRole("dialog", { name: "Show on photo" })).toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: "Lens" }));
+    expect(JSON.parse(localStorage.getItem("fovea.presentation")!).overlay.fields).toContain("lens");
+    expect(screen.getByRole("button", { name: "Hide camera data (O)" })).toHaveAttribute("aria-pressed", "true");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Show on photo" })).not.toBeInTheDocument();
+  });
+
   it("remembers the folder and the last photo viewed", async () => {
     const { viewer } = setup();
     await waitFor(() => expect(viewer.remember).toHaveBeenCalledWith(folder, "Z9_2.jpg"), { timeout: 2000 });

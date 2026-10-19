@@ -86,6 +86,37 @@ async function decode(blob: Blob, honourEmbeddedOrientation: boolean): Promise<I
   }
 }
 
+/** Only Safari decodes TIFF natively; elsewhere decode the largest page in JavaScript. Pixels come out unrotated. */
+async function decodeTiff(file: Blob): Promise<ImageBitmap> {
+  const UTIF = await import("utif2");
+  const buf = await file.arrayBuffer();
+  const pages = UTIF.decode(buf).filter((ifd) => ifd.t256 && ifd.t257);
+  const area = (ifd: (typeof pages)[number]) => Number((ifd.t256 as number[])[0]) * Number((ifd.t257 as number[])[0]);
+  const page = pages.reduce<(typeof pages)[number] | undefined>((best, ifd) => (!best || area(ifd) > area(best) ? ifd : best), undefined);
+  if (!page) throw new ProcessError("This TIFF file has no image in it.");
+  UTIF.decodeImage(buf, page);
+  const rgba = UTIF.toRGBA8(page);
+  const pixels = new Uint8ClampedArray(rgba.byteLength);
+  pixels.set(rgba);
+  return createImageBitmap(new ImageData(pixels, page.width, page.height));
+}
+
+/** For viewing: a TIFF the browser can't show, re-encoded as an upright JPEG. Returns null if the browser decodes it natively. */
+export async function displayableTiff(file: Blob, orientation: number): Promise<Blob | null> {
+  try {
+    (await createImageBitmap(file)).close();
+    return null;
+  } catch {
+    // fall through to the JavaScript decoder
+  }
+  const bitmap = await decodeTiff(file);
+  try {
+    return await toJpeg(renderUpright(bitmap, orientation, 8192), 0.92);
+  } finally {
+    bitmap.close();
+  }
+}
+
 /** Draws `src` upright (applying EXIF orientation 1–8) and scaled so its long edge is at most `longEdge`. */
 function renderUpright(src: ImageBitmap, orientation: number, longEdge: number): HTMLCanvasElement {
   const swap = orientation >= 5 && orientation <= 8;
@@ -177,8 +208,14 @@ export async function processFile(file: File): Promise<ProcessedFile> {
   try {
     bitmap = await decode(source, honourEmbedded);
   } catch (e) {
-    if (kind === "tiff") throw new ProcessError("This browser cannot open TIFF files. Use the Fovea desktop app for TIFF.");
-    throw e;
+    if (kind !== "tiff") throw e;
+    try {
+      bitmap = await decodeTiff(file);
+      honourEmbedded = false;
+    } catch (err) {
+      if (err instanceof ProcessError) throw err;
+      throw new ProcessError("This TIFF file could not be read in the browser. Try the Fovea desktop app, or save it as a JPEG.");
+    }
   }
   const orientation = honourEmbedded ? 1 : metadata.orientation ?? 1;
   let assetCanvas: HTMLCanvasElement;

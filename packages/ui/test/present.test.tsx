@@ -17,6 +17,7 @@ function setup(mode: "present" | "preview" = "present") {
 }
 
 const counter = () => screen.getByText(/\d+ \/ \d+/).textContent;
+const savedPresentation = () => JSON.parse(localStorage.getItem("fovea.presentation") ?? "null");
 
 describe("presentation", () => {
   it("navigates with arrow keys, Home and End, staying in bounds", async () => {
@@ -71,7 +72,7 @@ describe("presentation", () => {
   });
 
   it("opens the field picker with I and persists selections", async () => {
-    const { manifest, store } = setup();
+    setup();
     const user = userEvent.setup();
     await user.keyboard("i");
     const picker = screen.getByRole("dialog", { name: "Show on photo" });
@@ -80,16 +81,16 @@ describe("presentation", () => {
     expect(screen.getByRole("checkbox", { name: "Lens" })).not.toBeChecked();
     await user.click(screen.getByRole("checkbox", { name: "Lens" }));
     await user.click(screen.getByRole("radio", { name: "Top" }));
-    await waitFor(() => expect(store.get(manifest.assignmentId)!.presentation.overlay.fields).toContain("lens"), { timeout: 2000 });
-    expect(store.get(manifest.assignmentId)!.presentation.overlay.placement).toBe("top");
+    expect(savedPresentation().overlay.fields).toContain("lens");
+    expect(savedPresentation().overlay.placement).toBe("top");
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Show on photo" })).not.toBeInTheDocument();
   });
 
   it("switches camera data between horizontal and vertical with V and in the panel", async () => {
-    const { manifest, store } = setup();
+    setup();
     const user = userEvent.setup();
-    const saved = () => store.get(manifest.assignmentId)!.presentation.overlay.direction;
+    const saved = () => savedPresentation().overlay.direction;
     await user.keyboard("v");
     await waitFor(() => expect(saved()).toBe("vertical"), { timeout: 2000 });
     await user.keyboard("v");
