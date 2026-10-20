@@ -108,12 +108,16 @@ export function CommentsSection({
   onDelete,
   authorName,
   onAuthorName,
+  useGlobalName,
+  onUseGlobalName,
 }: {
   comments: Comment[];
   onAdd: (text: string) => void;
   onDelete: (id: string) => void;
   authorName: string;
   onAuthorName: (v: string) => void;
+  useGlobalName: boolean;
+  onUseGlobalName: (v: boolean) => void;
 }) {
   const [text, setText] = useState("");
   const submit = (e: FormEvent) => {
@@ -151,6 +155,10 @@ export function CommentsSection({
         <label className="field">
           <span>Your name (optional)</span>
           <input value={authorName} onChange={(e) => onAuthorName(e.target.value)} placeholder="Shown with your comments" />
+        </label>
+        <label className="checkbox-field">
+          <input type="checkbox" checked={useGlobalName} onChange={(e) => onUseGlobalName(e.target.checked)} />
+          <span>Use same name for all photos</span>
         </label>
         <label className="field">
           <span>Comment</span>

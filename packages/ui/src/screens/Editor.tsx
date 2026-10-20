@@ -71,6 +71,7 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
 
 const AUTHOR_KEY = "fovea.commentAuthor";
 const REVIEW_KEY = "fovea.reviewMode";
+const USE_GLOBAL_NAME_KEY = "fovea.useGlobalName";
 
 function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string }) {
   const platform = usePlatform();
@@ -89,7 +90,9 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [failures, setFailures] = useState<AddImagesResult["failures"]>([]);
   const [removing, setRemoving] = useState<string | null>(null);
-  const [author, setAuthor] = useState(() => localStorage.getItem(AUTHOR_KEY) ?? "");
+  const [globalAuthor, setGlobalAuthor] = useState(() => localStorage.getItem(AUTHOR_KEY) ?? "");
+  const [photoAuthors, setPhotoAuthors] = useState<Map<string, string>>(() => new Map());
+  const [useGlobalName, setUseGlobalName] = useState(() => localStorage.getItem(USE_GLOBAL_NAME_KEY) !== "0");
   const [zoom, setZoom] = useState<ZoomInfo>({ scale: 1, actualSize: 1 });
   const [showFocus, toggleFocus] = useFocusPoints();
   const [presentation, setPresentation] = usePresentation(initial.presentation);
@@ -97,12 +100,24 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
   const aid = manifest.assignmentId;
   const commentCount = useMemo(() => images.reduce((n, i) => n + i.comments.length, 0), [images]);
 
+  const currentAuthor = useGlobalName ? globalAuthor : (photoAuthors.get(selected?.id ?? "") ?? "");
+  const setCurrentAuthor = (name: string) => {
+    if (useGlobalName) {
+      setGlobalAuthor(name);
+    } else if (selected) {
+      setPhotoAuthors((prev) => new Map(prev).set(selected.id, name));
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem(AUTHOR_KEY, author);
-  }, [author]);
+    localStorage.setItem(AUTHOR_KEY, globalAuthor);
+  }, [globalAuthor]);
   useEffect(() => {
     localStorage.setItem(REVIEW_KEY, review ? "1" : "0");
   }, [review]);
+  useEffect(() => {
+    localStorage.setItem(USE_GLOBAL_NAME_KEY, useGlobalName ? "1" : "0");
+  }, [useGlobalName]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -332,10 +347,13 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
               <>
                 <NotesSection image={selected} onChange={(patch) => update((m) => updateUserNotes(m, selected.id, patch))} />
                 <CommentsSection
+                  key={selected.id}
                   comments={selected.comments}
-                  authorName={author}
-                  onAuthorName={setAuthor}
-                  onAdd={(text) => update((m) => addComment(m, selected.id, text, author))}
+                  authorName={currentAuthor}
+                  onAuthorName={setCurrentAuthor}
+                  useGlobalName={useGlobalName}
+                  onUseGlobalName={setUseGlobalName}
+                  onAdd={(text) => update((m) => addComment(m, selected.id, text, currentAuthor))}
                   onDelete={(cid) => update((m) => deleteComment(m, selected.id, cid))}
                 />
                 <CameraSection image={selected} onReplace={() => void replace(selected.id)} replacing={!!progress} />

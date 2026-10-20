@@ -11,6 +11,7 @@ const SHUTTERS = [
   15, 13, 10, 8, 6, 5, 4, 1 / 0.3, 1 / 0.4, 1 / 0.5, 1 / 0.6, 1 / 0.8, 1,
 ].map((d) => 1 / d);
 const ISOS = [64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800, 16000, 20000, 25600];
+const EXPOSURE_COMPS = [-3, -2.67, -2.33, -2, -1.67, -1.33, -1, -0.67, -0.33, 0, 0.33, 0.67, 1, 1.33, 1.67, 2, 2.33, 2.67, 3];
 
 /* Scene model, in normalised image coordinates (0..1, origin top-left). Depth is stored as inverse distance (1/m). */
 const TIGER: Pt[] = [
@@ -130,6 +131,11 @@ void main() {
 const fmtAperture = (n: number) => `f/${n}`;
 const fmtShutter = (t: number) => (t >= 0.3 ? `${+t.toFixed(1)} s` : `1/${Math.round(1 / t)} s`);
 const fmtIso = (n: number) => `ISO ${n}`;
+const fmtExposureComp = (ev: number) => {
+  const r = Math.round(ev * 3) / 3;
+  if (Math.abs(r) < 0.01) return "±0.0";
+  return `${r > 0 ? "+" : "−"}${Math.abs(r).toFixed(1)} EV`;
+};
 const fmtEv = (ev: number) => {
   const r = Math.round(ev * 3) / 3;
   if (Math.abs(r) < 0.01) return "0.0";
@@ -253,11 +259,13 @@ export function initPlayground(root: HTMLElement) {
     aperture: root.querySelector<HTMLInputElement>('[data-ctl="aperture"]')!,
     shutter: root.querySelector<HTMLInputElement>('[data-ctl="shutter"]')!,
     iso: root.querySelector<HTMLInputElement>('[data-ctl="iso"]')!,
+    expComp: root.querySelector<HTMLInputElement>('[data-ctl="expComp"]')!,
   };
   const outputs = {
     aperture: root.querySelector<HTMLOutputElement>('[data-out="aperture"]')!,
     shutter: root.querySelector<HTMLOutputElement>('[data-out="shutter"]')!,
     iso: root.querySelector<HTMLOutputElement>('[data-out="iso"]')!,
+    expComp: root.querySelector<HTMLOutputElement>('[data-out="expComp"]')!,
   };
 
   const gl = canvas.getContext("webgl2", { antialias: false, preserveDrawingBuffer: false });
@@ -266,7 +274,7 @@ export function initPlayground(root: HTMLElement) {
     return;
   }
 
-  const defaults = { aperture: APERTURES.indexOf(BASE.aperture), shutter: 10, iso: 0 };
+  const defaults = { aperture: APERTURES.indexOf(BASE.aperture), shutter: 10, iso: 0, expComp: 9 };
   controls.aperture.max = String(APERTURES.length - 1);
   controls.shutter.max = String(SHUTTERS.length - 1);
   controls.iso.max = String(ISOS.length - 1);
@@ -367,7 +375,8 @@ export function initPlayground(root: HTMLElement) {
 
       const blur = (BLUR_K / N) * INV_MAX;
       const maxR = Math.min(MAX_BLUR, blur * Math.max(state.focusInv / INV_MAX, 1 - state.focusInv / INV_MAX));
-      const ev = Math.log2((BASE.aperture / N) ** 2 * (t / BASE.shutter) * (iso / BASE.iso));
+      const comp = EXPOSURE_COMPS[state.expComp]!;
+      const ev = Math.log2((BASE.aperture / N) ** 2 * (t / BASE.shutter) * (iso / BASE.iso)) + comp;
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.useProgram(lens.prog);
@@ -386,6 +395,7 @@ export function initPlayground(root: HTMLElement) {
       outputs.aperture.textContent = fmtAperture(N);
       outputs.shutter.textContent = fmtShutter(t);
       outputs.iso.textContent = fmtIso(iso);
+      outputs.expComp.textContent = fmtExposureComp(comp);
       evLabel.textContent = fmtEv(ev);
       dofLabel.textContent = depthOfField(state.focusInv, N);
       const steps = Math.max(-9, Math.min(9, Math.round(ev * 3)));
@@ -428,6 +438,7 @@ export function initPlayground(root: HTMLElement) {
       state.aperture = +controls.aperture.value;
       state.shutter = +controls.shutter.value;
       state.iso = +controls.iso.value;
+      state.expComp = +controls.expComp.value;
       schedule();
     };
     for (const input of Object.values(controls)) input.addEventListener("input", sync);
@@ -436,6 +447,7 @@ export function initPlayground(root: HTMLElement) {
       controls.aperture.value = String(defaults.aperture);
       controls.shutter.value = String(defaults.shutter);
       controls.iso.value = String(defaults.iso);
+      controls.expComp.value = String(defaults.expComp);
       sync();
       setFocus(0.25, 0.81);
     };
