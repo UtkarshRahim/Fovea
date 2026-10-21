@@ -144,7 +144,11 @@ pub fn image(path: &Path, exiftool: &ExifTool) -> Result<Vec<u8>, String> {
     if HEIC.contains(&ext.as_str()) {
         return Err("HEIC photos can only be shown on a Mac.".into());
     }
-    let orientation = exiftool.read_tags(path).ok().and_then(|t| t.get("Orientation").and_then(|v| v.as_u64())).unwrap_or(1) as u8;
+    let orientation = exiftool.read_tags(path).ok().and_then(|t| 
+        t.get("IFD0:Orientation")
+            .or_else(|| t.get("Orientation"))
+            .and_then(|v| v.as_u64())
+    ).unwrap_or(1) as u8;
     if TIFF.contains(&ext.as_str()) {
         let (out, _) = pipeline::render(path, Kind::Tiff, orientation, Options { long_edge: 8192, thumb_edge: 64 })?;
         return Ok(out.asset);
