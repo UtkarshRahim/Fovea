@@ -24,6 +24,22 @@ function str(v: unknown): string | undefined {
 }
 
 function normalizeMeteringMode(v: unknown): string | undefined {
+  // Handle numeric EXIF values (from -n flag)
+  if (typeof v === "number") {
+    const modes: Record<number, string> = {
+      0: "Unknown",
+      1: "Average",
+      2: "Center-weighted",
+      3: "Spot",
+      4: "Multi-spot",
+      5: "Matrix/Evaluative",
+      6: "Partial",
+      255: "Other",
+    };
+    return modes[v];
+  }
+  
+  // Handle string values (from ExifTool without -n, or from exifr)
   const s = str(v);
   if (!s) return undefined;
   const lower = s.toLowerCase();
@@ -41,6 +57,23 @@ function normalizeMeteringMode(v: unknown): string | undefined {
 }
 
 function normalizeExposureProgram(v: unknown): string | undefined {
+  // Handle numeric EXIF values
+  if (typeof v === "number") {
+    const programs: Record<number, string> = {
+      0: "Not defined",
+      1: "Manual",
+      2: "Program",
+      3: "Aperture priority",
+      4: "Shutter priority",
+      5: "Creative",
+      6: "Action",
+      7: "Portrait",
+      8: "Landscape",
+      9: "Bulb",
+    };
+    return programs[v];
+  }
+  
   const s = str(v);
   if (!s) return undefined;
   const lower = s.toLowerCase();
@@ -55,6 +88,34 @@ function normalizeExposureProgram(v: unknown): string | undefined {
 }
 
 function normalizeWhiteBalance(v: unknown): string | undefined {
+  // Handle numeric EXIF values
+  if (typeof v === "number") {
+    const wb: Record<number, string> = {
+      0: "Auto",
+      1: "Daylight",
+      2: "Fluorescent",
+      3: "Tungsten",
+      4: "Flash",
+      9: "Fine weather",
+      10: "Cloudy",
+      11: "Shade",
+      12: "Daylight fluorescent",
+      13: "Day white fluorescent",
+      14: "Cool white fluorescent",
+      15: "White fluorescent",
+      17: "Standard light A",
+      18: "Standard light B",
+      19: "Standard light C",
+      20: "D55",
+      21: "D65",
+      22: "D75",
+      23: "D50",
+      24: "ISO studio tungsten",
+      255: "Other",
+    };
+    return wb[v];
+  }
+  
   const s = str(v);
   if (!s) return undefined;
   const lower = s.toLowerCase();
