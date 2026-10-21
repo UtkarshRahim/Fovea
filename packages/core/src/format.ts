@@ -88,6 +88,28 @@ export function formatLens(meta: CameraMetadata): string | undefined {
   return meta.lens?.model?.trim() || undefined;
 }
 
+export function formatMeteringMode(mode: string | undefined): string | undefined {
+  return mode || undefined;
+}
+
+export function formatWhiteBalance(wb: string | undefined): string | undefined {
+  return wb || undefined;
+}
+
+export function formatExposureProgram(program: string | undefined): string | undefined {
+  return program || undefined;
+}
+
+export function formatFlash(flash: CameraMetadata["flash"]): string | undefined {
+  if (!flash) return undefined;
+  if (!flash.fired) return "No flash";
+  return flash.mode ? `Flash (${flash.mode})` : "Flash";
+}
+
+export function formatFocusMode(mode: string | undefined): string | undefined {
+  return mode || undefined;
+}
+
 export const FIELD_LABELS: Record<OverlayField, string> = {
   focalLength: "Focal length",
   aperture: "Aperture",

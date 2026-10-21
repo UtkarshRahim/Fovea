@@ -20,7 +20,7 @@ import { Filmstrip, ThumbStrip } from "../components/Filmstrip";
 import { PhotoStage, type PhotoStageHandle, type ZoomInfo } from "../components/PhotoStage";
 import { StageControls } from "../components/StageControls";
 import { ProjectSwitcher } from "../components/ProjectSwitcher";
-import { CameraSection, CommentsSection, NotesSection } from "../components/InfoPanel";
+import { CameraSection, CommentsSection, NotesSection, RawMetadataSection } from "../components/InfoPanel";
 import { FieldPicker, toggleDirection } from "../components/FieldPicker";
 import { ExportBundleDialog, ExportImageDialog } from "../components/ExportDialogs";
 import { useToast } from "../components/Toasts";
@@ -357,6 +357,7 @@ function EditorInner({ initial, imageId }: { initial: Manifest; imageId?: string
                   onDelete={(cid) => update((m) => deleteComment(m, selected.id, cid))}
                 />
                 <CameraSection image={selected} onReplace={() => void replace(selected.id)} replacing={!!progress} />
+                <RawMetadataSection image={selected} />
               </>
             ) : null}
             <section className="panel-section" aria-labelledby="project-notes-h">

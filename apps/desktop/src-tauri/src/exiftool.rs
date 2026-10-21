@@ -130,10 +130,19 @@ impl ExifTool {
     }
 
     /// Returns ExifTool's `-json -n` object for one file.
+    /// Now extracts ALL metadata tags using `-all` instead of a predefined list.
     pub fn read_tags(&self, path: &Path) -> Result<serde_json::Value, String> {
         let launcher = self.launcher.as_ref().ok_or("ExifTool is not available, so camera metadata could not be read.")?;
-        let mut args: Vec<String> = vec!["-json".into(), "-n".into(), "-charset".into(), "filename=utf8".into()];
-        args.extend(TAGS.iter().map(|t| format!("-{t}")));
+        let mut args: Vec<String> = vec![
+            "-json".into(),
+            "-n".into(),  // Numeric output for GPS, dates, etc.
+            "-G1".into(), // Include group names (EXIF:, MakerNotes:, etc.)
+            "-all".into(), // Extract ALL available tags
+            "-charset".into(),
+            "filename=utf8".into(),
+            "-b".into(),  // Binary format for certain tags
+            "--binary".into(), // But don't output binary data as base64
+        ];
         args.push(path.to_string_lossy().into_owned());
 
         let mut guard = self.proc.lock().map_err(|_| "ExifTool lock poisoned")?;

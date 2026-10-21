@@ -32,12 +32,13 @@ export async function readMetadata(file: Blob, rawSize?: { width: number; height
       tiff: true,
       exif: true,
       gps: true,
-      ifd1: false,
-      interop: false,
-      makerNote: false,
+      ifd1: true,  // Include thumbnail IFD for more metadata
+      interop: true,  // Include interoperability tags
+      makerNote: true,  // Include maker-specific tags
       translateValues: false,
       reviveValues: false,
       mergeOutput: true,
+      pick: undefined,  // Don't restrict which tags to extract - get all available
     });
     if (!tags) return {};
     if (rawSize !== undefined) {

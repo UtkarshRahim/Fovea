@@ -5,11 +5,16 @@ import {
   formatCamera,
   formatCaptureDate,
   formatExposureCompensation,
+  formatExposureProgram,
+  formatFlash,
   formatFocalLength,
+  formatFocusMode,
   formatIso,
   formatLens,
+  formatMeteringMode,
   formatOriginalSize,
   formatShutterSpeed,
+  formatWhiteBalance,
   type Comment,
   type ImageEntry,
   type UserNotes,
@@ -60,9 +65,14 @@ export function CameraSection({ image, onReplace, replacing }: { image: ImageEnt
     ["Aperture", formatAperture(e?.aperture)],
     ["Shutter", formatShutterSpeed(e?.shutterSpeedSeconds)],
     ["ISO", formatIso(e?.iso)],
+    ["Exp. comp.", formatExposureCompensation(e?.exposureCompensationEv)],
+    ["Exposure program", formatExposureProgram(e?.exposureProgram)],
+    ["Metering", formatMeteringMode(e?.meteringMode)],
+    ["White balance", formatWhiteBalance(image.whiteBalance)],
+    ["Flash", formatFlash(image.flash)],
+    ["Focus mode", formatFocusMode(image.focusMode)],
     ["Body", formatCamera(image)],
     ["Lens", formatLens(image)],
-    ["Exp. comp.", formatExposureCompensation(e?.exposureCompensationEv)],
     ["Captured", formatCaptureDate(image.capturedAt)],
     ["Original size", formatOriginalSize(image)],
     ["GPS", image.gps ? "Present (stripped from exports by default)" : undefined],
@@ -98,6 +108,89 @@ export function CameraSection({ image, onReplace, replacing }: { image: ImageEnt
           <p className="muted small">Swaps in a new file and its camera data. Notes, comments and order stay as they are.</p>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+export function RawMetadataSection({ image }: { image: ImageEntry }) {
+  const [expanded, setExpanded] = useState(false);
+  const [filter, setFilter] = useState("");
+  
+  const rawMetadata = image.rawMetadata ?? {};
+  const entries = Object.entries(rawMetadata).sort(([a], [b]) => a.localeCompare(b));
+  
+  const filteredEntries = filter
+    ? entries.filter(([key, value]) => 
+        key.toLowerCase().includes(filter.toLowerCase()) ||
+        String(value).toLowerCase().includes(filter.toLowerCase())
+      )
+    : entries;
+  
+  if (entries.length === 0) return null;
+  
+  const formatValue = (value: unknown): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (Array.isArray(value)) return value.join(", ");
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value, null, 2);
+      } catch {
+        return String(value);
+      }
+    }
+    return String(value);
+  };
+  
+  return (
+    <section className="panel-section" aria-labelledby="raw-metadata-h">
+      <h2 id="raw-metadata-h" className="section-title">
+        <button
+          type="button"
+          className="section-title-button"
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+        >
+          Technical details
+          <span className="muted" style={{ fontWeight: "normal", marginLeft: "0.5em" }}>
+            ({entries.length} fields)
+          </span>
+        </button>
+      </h2>
+      {expanded && (
+        <>
+          {entries.length > 10 && (
+            <input
+              type="text"
+              placeholder="Filter metadata..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="metadata-filter"
+              style={{
+                width: "100%",
+                marginBottom: "var(--space-2)",
+                padding: "var(--space-2)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                fontSize: "13px",
+              }}
+            />
+          )}
+          <dl className="kv metadata-list">
+            {filteredEntries.map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd className="mono">{formatValue(value)}</dd>
+              </div>
+            ))}
+          </dl>
+          {filteredEntries.length === 0 && filter && (
+            <p className="muted small">No metadata fields match "{filter}"</p>
+          )}
+        </>
+      )}
     </section>
   );
 }

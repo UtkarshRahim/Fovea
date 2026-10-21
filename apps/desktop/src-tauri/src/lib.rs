@@ -236,6 +236,7 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| queue_open(app, file_args(argv.into_iter().skip(1)))));
     let app = builder
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(OpenRequests(Mutex::new(file_args(std::env::args().skip(1)))))
         .setup(|app| {
             let data = app.path().app_data_dir()?;

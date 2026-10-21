@@ -16,6 +16,7 @@
     "@fovea/ui": "workspace:*",
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-dialog": "^2.8.3",
+    "@tauri-apps/plugin-updater": "^2.8.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

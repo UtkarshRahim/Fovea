@@ -80,8 +80,13 @@ export const CameraMetadataSchema = z.object({
       iso: z.number().positive().optional(),
       focalLengthMm: z.number().positive().optional(),
       exposureCompensationEv: z.number().optional(),
+      meteringMode: z.string().optional(),
+      exposureProgram: z.string().optional(),
     })
     .optional(),
+  whiteBalance: z.string().optional(),
+  flash: z.object({ fired: z.boolean().optional(), mode: z.string().optional() }).optional(),
+  focusMode: z.string().optional(),
   capturedAt: z.string().optional(),
   dimensions: Dimensions.optional(),
   orientation: z.number().int().min(1).max(8).optional(),

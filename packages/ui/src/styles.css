@@ -796,6 +796,78 @@ select {
   letter-spacing: 0;
   font-weight: 400;
 }
+.section-title-button {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: var(--space-1) 0;
+}
+.section-title-button:hover {
+  color: var(--text);
+}
+.metadata-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+.metadata-list dd {
+  word-break: break-word;
+  max-width: 100%;
+}
+.update-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.update-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.update-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.update-text strong {
+  font-weight: 600;
+}
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.update-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 200px;
+}
+.progress-bar-bg {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent-text);
+  transition: width 0.3s ease;
+}
 .panel-section textarea[rows="3"] {
   font-family: var(--serif);
   font-style: italic;
