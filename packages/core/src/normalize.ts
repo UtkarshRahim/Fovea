@@ -27,11 +27,16 @@ function normalizeMeteringMode(v: unknown): string | undefined {
   const s = str(v);
   if (!s) return undefined;
   const lower = s.toLowerCase();
+  
+  // Handle compound patterns like "Pattern/Spot" or "Multi-segment/Spot"
+  if (lower.includes("pattern") && lower.includes("spot")) return "Pattern/Spot";
   if (lower.includes("spot")) return "Spot";
   if (lower.includes("center") || lower.includes("centre")) return "Center-weighted";
   if (lower.includes("matrix") || lower.includes("evaluative") || lower.includes("multi")) return "Matrix/Evaluative";
   if (lower.includes("partial")) return "Partial";
   if (lower.includes("average")) return "Average";
+  
+  // Return the original string if we don't recognize the pattern
   return s;
 }
 
@@ -157,7 +162,7 @@ export function normalizeTags(tags: Tags): CameraMetadata {
   if (focal && focal > 0) exposure.focalLengthMm = focal;
   const ev = num(first(tags, ["ExposureCompensation", "ExposureBiasValue"]));
   if (ev !== undefined) exposure.exposureCompensationEv = ev;
-  const meteringMode = normalizeMeteringMode(tags.MeteringMode);
+  const meteringMode = normalizeMeteringMode(first(tags, ["MeteringMode", "EXIF:MeteringMode", "ExifIFD:MeteringMode"]));
   if (meteringMode) exposure.meteringMode = meteringMode;
   const exposureProgram = normalizeExposureProgram(first(tags, ["ExposureProgram", "ExposureMode"]));
   if (exposureProgram) exposure.exposureProgram = exposureProgram;
@@ -205,7 +210,8 @@ export function normalizeTags(tags: Tags): CameraMetadata {
     "Make", "Model", "LensModel", "LensMake", "FNumber", "ExposureTime", "ShutterSpeed",
     "ISO", "ISOSpeedRatings", "PhotographicSensitivity", "RecommendedExposureIndex",
     "FocalLength", "ExposureCompensation", "ExposureBiasValue",
-    "MeteringMode", "ExposureProgram", "ExposureMode", "WhiteBalance", "WhiteBalanceMode",
+    "MeteringMode", "EXIF:MeteringMode", "ExifIFD:MeteringMode",
+    "ExposureProgram", "ExposureMode", "WhiteBalance", "WhiteBalanceMode",
     "Flash", "FocusMode", "FocusMode2", "AFMode",
     "DateTimeOriginal", "CreateDate", "DateTimeDigitized",
     "ImageSize", "ExifImageWidth", "PixelXDimension", "ImageWidth",
