@@ -814,9 +814,31 @@ select {
   max-height: 400px;
   overflow-y: auto;
 }
+.metadata-list > div {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-1) 0;
+}
+.metadata-list dt {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
 .metadata-list dd {
   word-break: break-word;
   max-width: 100%;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+.metadata-filter {
+  width: 100%;
+  margin-bottom: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
 }
 .update-notification {
   position: fixed;

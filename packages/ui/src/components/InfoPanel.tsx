@@ -100,6 +100,9 @@ export function CameraSection({ image, onReplace, replacing }: { image: ImageEnt
         <br />
         Shown from: {SOURCE_LABEL[image.assetSource]}
       </p>
+      
+      <RawMetadataSection image={image} structuredFields={rows} />
+      
       {onReplace ? (
         <div className="replace-row">
           <Button size="sm" onClick={onReplace} disabled={replacing} title="Use a different file for this photo. Notes and comments stay.">
@@ -112,21 +115,29 @@ export function CameraSection({ image, onReplace, replacing }: { image: ImageEnt
   );
 }
 
-export function RawMetadataSection({ image }: { image: ImageEntry }) {
+export function RawMetadataSection({ image, structuredFields }: { image: ImageEntry; structuredFields: [string, string | undefined][] }) {
   const [expanded, setExpanded] = useState(false);
   const [filter, setFilter] = useState("");
   
+  // Combine structured fields with raw metadata
+  const structuredEntries: [string, unknown][] = structuredFields
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => [key, value]);
+  
   const rawMetadata = image.rawMetadata ?? {};
-  const entries = Object.entries(rawMetadata).sort(([a], [b]) => a.localeCompare(b));
+  const rawEntries = Object.entries(rawMetadata);
+  
+  // Combine both, with structured fields first
+  const allEntries = [...structuredEntries, ...rawEntries].sort(([a], [b]) => a.localeCompare(b));
   
   const filteredEntries = filter
-    ? entries.filter(([key, value]) => 
+    ? allEntries.filter(([key, value]) => 
         key.toLowerCase().includes(filter.toLowerCase()) ||
         String(value).toLowerCase().includes(filter.toLowerCase())
       )
-    : entries;
+    : allEntries;
   
-  if (entries.length === 0) return null;
+  if (allEntries.length === 0) return null;
   
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return "";
@@ -145,8 +156,8 @@ export function RawMetadataSection({ image }: { image: ImageEntry }) {
   };
   
   return (
-    <section className="panel-section" aria-labelledby="raw-metadata-h">
-      <h2 id="raw-metadata-h" className="section-title">
+    <div className="raw-metadata-subsection">
+      <h3 className="section-title" style={{ fontSize: "14px", marginTop: "var(--space-3)" }}>
         <button
           type="button"
           className="section-title-button"
@@ -155,27 +166,19 @@ export function RawMetadataSection({ image }: { image: ImageEntry }) {
         >
           Technical details
           <span className="muted" style={{ fontWeight: "normal", marginLeft: "0.5em" }}>
-            ({entries.length} fields)
+            ({allEntries.length} fields)
           </span>
         </button>
-      </h2>
+      </h3>
       {expanded && (
         <>
-          {entries.length > 10 && (
+          {allEntries.length > 10 && (
             <input
               type="text"
               placeholder="Filter metadata..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="metadata-filter"
-              style={{
-                width: "100%",
-                marginBottom: "var(--space-2)",
-                padding: "var(--space-2)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                fontSize: "13px",
-              }}
             />
           )}
           <dl className="kv metadata-list">
@@ -191,7 +194,7 @@ export function RawMetadataSection({ image }: { image: ImageEntry }) {
           )}
         </>
       )}
-    </section>
+    </div>
   );
 }
 
